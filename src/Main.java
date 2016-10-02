@@ -45,7 +45,7 @@ public class Main extends Application{
                 board[i][j].setY(j * STEP);
                 board[i][j].setWidth(STEP);
                 board[i][j].setHeight(STEP);
-                board[i][j].setStroke(Color.RED);
+                board[i][j].setStroke(Color.GREEN);
                 board[i][j].setStrokeWidth(2);
                 board[i][j].setFill(Color.WHITE);
                 pane.getChildren().add(board[i][j]);
@@ -61,7 +61,7 @@ public class Main extends Application{
         AnimationTimer timer = new AnimationTimer() {
             @Override
             public void handle(long now) { //now on nanosekundites
-                if (now - lastTimeStamp > (Math.pow(10, 9)) / 10) { //update 10 x sekundis
+                if (now - lastTimeStamp > (Math.pow(10, 9)) / 7) { //update  x sekundis
                     recY += STEP;
                     rec.setX(recX);
                     rec.setY(recY);
