@@ -30,7 +30,12 @@ public class Main extends Application {
         primaryStage.setScene(scene);
 
         /*Initial drawing of "game board"*/
-        Rectangle[][] boardFX = new Rectangle[COLUMNS][ROWS];
+        Rectangle[][] boardFX = new Rectangle[ROWS][COLUMNS];
+
+
+        // rewrite järg siin
+
+
         for (int i = 0; i < COLUMNS; i++) {
             for (int j = 0; j < ROWS; j++) {
                 boardFX[i][j] = new Rectangle();
