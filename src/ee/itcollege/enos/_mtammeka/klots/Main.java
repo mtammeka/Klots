@@ -8,7 +8,7 @@ import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 
 public class Main extends Application {
-    private final static int UP_L = 6, DOWN_L = 2, RIGHT_L = 3, LEFT_L = 4, CUBE = 5, RANDOM = 1; //etc
+    public final static int UP_L = 6, DOWN_L = 2, RIGHT_L = 3, LEFT_L = 4, CUBE = 5, RANDOM = 1; //etc
     public final static int EMPTY_SQUARE = 1, OCCUPIED_SQUARE = 2, FIXED_SQUARE = 3;
     private final static int SCENE_WIDTH = 400;
     private final static int SCENE_HEIGHT = 600;
@@ -62,7 +62,7 @@ public class Main extends Application {
             @Override
             public void handle(long now) {
                 if (!fallingPieceExists) {
-                    Pieces.spawnAPiece(board, COLUMNS / 2, 0, RANDOM);
+                    spawnAPiece(board, COLUMNS / 2, 0, RANDOM);
                 }
                 /* stuff happens */
 
@@ -93,6 +93,13 @@ public class Main extends Application {
                             outputBoardFX[i][j].setFill(Color.DARKGRAY);
                         break;
                 }
+    }
+
+    static void spawnAPiece(int[][] targetBoard, int x, int y, int PIECETYPE) {
+        targetBoard[5][5] = Main.OCCUPIED_SQUARE; //example...
+        //TODO this function puts a complete piece in the target board
+
+        /*
     }
 }
 
