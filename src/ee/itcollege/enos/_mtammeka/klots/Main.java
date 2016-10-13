@@ -97,8 +97,9 @@ public class Main extends Application {
                 }
     }
 
-    static void spawnAPiece(int[][] targetBoard, int ROW_OFFSET, int COL_OFFSET, int PIECETYPE) {
+    static void spawnAPiece(int[][] targetBoard, final int ROW_OFFSET, final int COL_OFFSET, int pieceType) {
         //TODO this function puts a complete piece in the target board
+        //expected to be called only if no pieces exist ... I guess
 
         int[][] upL =       { {OCCUPIED_SQUARE, EMPTY_SQUARE},                      // XO
                             {OCCUPIED_SQUARE, EMPTY_SQUARE},                        // XO
@@ -117,9 +118,9 @@ public class Main extends Application {
         int[][] cube =      { {OCCUPIED_SQUARE, OCCUPIED_SQUARE},                   // XX
                             {OCCUPIED_SQUARE, OCCUPIED_SQUARE} };                   // XX
 
-        int[][] currentPiece;
-        /* siin võiks liikuda target board x ja y koordinaatidele, teha seal nt 4x4 kasti mittefikseeritud ruute
-        täiesti puhtaks JAA tekitada uue klotsi */
+        int[][] currentPiece = cube; // have to initialize to something..?
+
+        // clear from previous pieces in case rotating etc... maybe handle cleanin elswhere though?
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 4; j++) {
                 if (targetBoard[i + ROW_OFFSET][j + COL_OFFSET] != FIXED_SQUARE) {
@@ -129,23 +130,29 @@ public class Main extends Application {
         }
 
         //UP_L = 6, DOWN_L = 2, RIGHT_L = 3, LEFT_L = 4, CUBE = 5, RANDOM = 1; //etc
-        switch (PIECETYPE) {
+        if (pieceType == RANDOM)
+            pieceType = (int) (Math.random() * 5) + 2; //1 is random, 2...6 are pieces
+
+        switch (pieceType) {
             case UP_L:      currentPiece = upL;
                             break;
             case DOWN_L:    currentPiece = downL;
                             break;
-            case RIGHT_L:   currentPiece = leftL;
+            case RIGHT_L:   currentPiece = rightL;
                             break;
-
+            case LEFT_L:    currentPiece = leftL;
+                            break;
+            case CUBE:      currentPiece = cube;
+                            break;
         }
 
-        for (int i = 0; i < upL.length; i++) {
-            for (int j = 0; j < upL[i].length; j++) {
-                targetBoard[i + ROW_OFFSET][j + COL_OFFSET] = upL[i][j];
+        for (int i = 0; i < currentPiece.length; i++) {
+            for (int j = 0; j < currentPiece[i].length; j++) {
+                targetBoard[i + ROW_OFFSET][j + COL_OFFSET] = currentPiece[i][j];
             }
         }
-
-
+        // got this far so we definitely have a piece on the board now right?
+        fallingPieceExists = true;
     }
 }
 
