@@ -38,7 +38,7 @@ public class Main extends Application {
                 boardFX[i][j].setY(j * STEP);
                 boardFX[i][j].setWidth(STEP);
                 boardFX[i][j].setHeight(STEP);
-                boardFX[i][j].setStroke(Color.GREEN);
+                boardFX[i][j].setStroke(Color.LIGHTGREEN);
                 boardFX[i][j].setStrokeWidth(2);
                 boardFX[i][j].setFill(Color.DARKGRAY);
                 pane.getChildren().add(boardFX[i][j]);
@@ -95,11 +95,44 @@ public class Main extends Application {
                 }
     }
 
-    static void spawnAPiece(int[][] targetBoard, int x, int y, int PIECETYPE) {
-        targetBoard[5][5] = Main.OCCUPIED_SQUARE; //example...
+    static void spawnAPiece(int[][] targetBoard, int COL_OFFSET, int ROW_OFFSET, int PIECETYPE) {
         //TODO this function puts a complete piece in the target board
+        //UP_L = 6, DOWN_L = 2, RIGHT_L = 3, LEFT_L = 4, CUBE = 5, RANDOM = 1; //etc
+        //I guess putting COLUMNS in the inner array wasn't so smart as now all these are
+        //"mirrored and left-rotated 90 degrees lulz//
+        int[][] upL =       { {OCCUPIED_SQUARE, EMPTY_SQUARE},                      // XO
+                            {OCCUPIED_SQUARE, EMPTY_SQUARE},                        // XO
+                            {OCCUPIED_SQUARE, OCCUPIED_SQUARE} };                   // XX
 
-        /*
+        int[][] downL =     { {OCCUPIED_SQUARE, EMPTY_SQUARE},                      // XX
+                            {OCCUPIED_SQUARE, EMPTY_SQUARE},                        // OX
+                            {OCCUPIED_SQUARE, OCCUPIED_SQUARE} };                   // OX
+
+        int[][] leftL =     { {OCCUPIED_SQUARE, OCCUPIED_SQUARE, OCCUPIED_SQUARE},  // XXX
+                            {OCCUPIED_SQUARE, EMPTY_SQUARE, EMPTY_SQUARE} };        // XOO
+
+        int[][] rightL =    { {OCCUPIED_SQUARE, EMPTY_SQUARE, EMPTY_SQUARE},        // XOO
+                            {OCCUPIED_SQUARE, OCCUPIED_SQUARE, OCCUPIED_SQUARE} };  // XXX
+
+        int[][] cube =      { {OCCUPIED_SQUARE, OCCUPIED_SQUARE},                   // XX
+                            {OCCUPIED_SQUARE, OCCUPIED_SQUARE} };                   // XX
+        /* siin võiks liikuda target board x ja y koordinaatidele, teha seal nt 4x4 kasti mittefikseeritud ruute
+        täiesti puhtaks JAA tekitada uue klotsi */
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                if (targetBoard[i + COL_OFFSET][j + ROW_OFFSET] != FIXED_SQUARE) {
+                    targetBoard[i + COL_OFFSET][j + ROW_OFFSET] = EMPTY_SQUARE;
+                }
+            }
+        }
+
+        for (int i = 0; i < upL.length; i++) {
+            for (int j = 0; j < upL[i].length; j++) {
+                targetBoard[i + COL_OFFSET][j + ROW_OFFSET] = upL[i][j];
+            }
+        }
+
+
     }
 }
 
