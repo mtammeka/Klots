@@ -46,8 +46,8 @@ public class Main extends Application {
             }
         }
         System.out.printf("COLUMNS: %d, ROWS: %d.\n", COLUMNS, ROWS);
-        boardFX[14][0].setFill(Color.BLUE); // row 13 column 1 - paint blue
-        boardFX[ROWS - 1][COLUMNS - 1].setFill(Color.YELLOW); // lowest rightmost square - paint yellow
+        //boardFX[14][0].setFill(Color.BLUE); // row 13 column 1 - paint blue
+        //boardFX[ROWS - 1][COLUMNS - 1].setFill(Color.YELLOW); // lowest rightmost square - paint yellow
 
         /*Actual game board - only info held by squares is their state -
          * EMPTY, OCCUPIED or FIXED. The location of a square is known through [i][j] coordinates */
@@ -120,7 +120,7 @@ public class Main extends Application {
 
         int[][] currentPiece = cube; // have to initialize to something..?
 
-        // clear from previous pieces in case rotating etc... maybe handle cleanin elswhere though?
+        // clear from previous pieces in case rotating etc... maybe handle cleaning elswhere though?
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 4; j++) {
                 if (targetBoard[i + ROW_OFFSET][j + COL_OFFSET] != FIXED_SQUARE) {
