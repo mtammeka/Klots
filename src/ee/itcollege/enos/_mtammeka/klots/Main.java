@@ -15,7 +15,7 @@ public class Main extends Application {
     private final static int STEP = 20;
     private final static int ROWS = SCENE_HEIGHT / STEP;
     private final static int COLUMNS = SCENE_WIDTH / STEP;
-
+    private long lastTimeStamp = 0;
     private static boolean fallingPieceExists = false;
 
     public static void main(String[] args) {
@@ -62,13 +62,19 @@ public class Main extends Application {
 
             @Override
             public void handle(long now) {
-                if (!fallingPieceExists) {
-                    spawnAPiece(board, 0, COLUMNS / 2, RANDOM);
+                if (now - lastTimeStamp > (Math.pow(10, 9)) / 10) { //update ?xsekundis natiivne refresh on vist 60fps
+                    lastTimeStamp = now;
+
+                    if (!fallingPieceExists) {
+                        spawnAPiece(board, 0, COLUMNS / 2, RANDOM);
+                    } else {
+                        advanceAPiece(board);
+
+                    }
+                    /* stuff happens */
+
+                    carryBoardToBoardFX(board, boardFX, ROWS, COLUMNS);
                 }
-                /* stuff happens */
-
-                carryBoardToBoardFX(board, boardFX, ROWS, COLUMNS);
-
             }
         };
 
@@ -153,6 +159,33 @@ public class Main extends Application {
         }
         // got this far so we definitely have a piece on the board now right?
         fallingPieceExists = true;
+    }
+
+    static void advanceAPiece(int[][] theBoard) {
+        /*ascend top->down column by column, advance what's found*/
+        /*theBoard[row][column]*/
+        int advancables;
+        for (int j = 0; j < theBoard[0].length; j++) { // mitu tulpa
+            advancables = 0;
+
+            for (int i = 0; i < theBoard.length; i++) { // mitu rida, st elementi tulbas
+                if (theBoard[i][j] == OCCUPIED_SQUARE) {
+                    advancables++;
+                    /*
+                    *
+                    * JÄTKA SIIT HAHA
+                    *
+                    * */
+
+
+                } else if (theBoard[i][j] == EMPTY_SQUARE && advancables != 0) {
+                    theBoard[i - advancables][j] = EMPTY_SQUARE;
+                    theBoard[i][j] = OCCUPIED_SQUARE;
+                    advancables = 0;
+                }
+            }
+
+        }
     }
 }
 
