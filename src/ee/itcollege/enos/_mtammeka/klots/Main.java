@@ -176,6 +176,20 @@ public class Main extends Application {
                     * JÄTKA SIIT HAHA
                     *
                     * */
+                    // siin if-is ma väga usun et vasakult paremale hinnatakse '||' statementi ja kui
+                    // i+1==theboard.length on TÕSI EHK JÄRGMIST ELEMENTI EI OLE
+                    // siis ei hakata uurima KAS JÄRGMINE ELEMENT VÕIKS OLLA FIKSEERITUD RUUT
+                    if (((i + 1) == theBoard.length) || (theBoard[i + 1][j] == FIXED_SQUARE))   { // oleme lõpus all ? või millegi vastas?
+                        //
+                        // ok oleme all väljas või fikseeritud klotsi vastas, fikseerime praeguse tulba jagu ruute ka
+                        // ... peab backtrackima advancables võrra
+                        for (int k = 0; k < advancables; k++) {
+                            theBoard[i - k][j] = FIXED_SQUARE;
+                        }
+                        // jaa kuna klots on fikseeritud siis langevat klotsi enam pole eks
+                        // ...TODO üle saada sellst et klots vajub tükkideks tulpade vahel
+                        fallingPieceExists = false;
+                    }
 
 
                 } else if (theBoard[i][j] == EMPTY_SQUARE && advancables != 0) {
