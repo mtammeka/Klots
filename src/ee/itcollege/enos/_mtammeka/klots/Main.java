@@ -8,6 +8,7 @@ import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 
 public class Main extends Application {
+    // TODO muutujate scope üle vaadata, palju ebavajalikku on siin ilmselt
     public final static int UP_L = 6, DOWN_L = 2, RIGHT_L = 3, LEFT_L = 4, CUBE = 5, RANDOM = 1; //etc
     public final static int EMPTY_SQUARE = 1, OCCUPIED_SQUARE = 2, FIXED_SQUARE = 3;
     private final static int SCENE_WIDTH = 400;
@@ -17,6 +18,7 @@ public class Main extends Application {
     private final static int COLUMNS = SCENE_WIDTH / STEP;
     private long lastTimeStamp = 0;
     private static boolean fallingPieceExists = false;
+    private static boolean gameOver = false; // kui tüki tekitamiseks pole ruumi... spawnAPiece ise kontrollib?
 
     public static void main(String[] args) {
         launch(args);
@@ -180,14 +182,19 @@ public class Main extends Application {
                     // i+1==theboard.length on TÕSI EHK JÄRGMIST ELEMENTI EI OLE
                     // siis ei hakata uurima KAS JÄRGMINE ELEMENT VÕIKS OLLA FIKSEERITUD RUUT
                     if (((i + 1) == theBoard.length) || (theBoard[i + 1][j] == FIXED_SQUARE))   { // oleme lõpus all ? või millegi vastas?
-                        //
-                        // ok oleme all väljas või fikseeritud klotsi vastas, fikseerime praeguse tulba jagu ruute ka
-                        // ... peab backtrackima advancables võrra
-                        for (int k = 0; k < advancables; k++) {
-                            theBoard[i - k][j] = FIXED_SQUARE;
+
+                        for (int k = 0; k < theBoard[0].length; k++) {
+                            for (int l = 0; l < theBoard.length ; l++) {
+                                if (theBoard[l][k] == OCCUPIED_SQUARE)
+                                    theBoard[l][k] = FIXED_SQUARE;
+
+                            }
+
                         }
-                        // jaa kuna klots on fikseeritud siis langevat klotsi enam pole eks
-                        // ...TODO üle saada sellst et klots vajub tükkideks tulpade vahel
+
+                        //
+
+
                         fallingPieceExists = false;
                     }
 
