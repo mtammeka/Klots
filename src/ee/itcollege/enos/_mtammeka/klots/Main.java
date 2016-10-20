@@ -1,6 +1,7 @@
 package ee.itcollege.enos._mtammeka.klots;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.Scene;
@@ -76,6 +77,13 @@ public class Main extends Application {
                     /* stuff happens */
 
                     carryBoardToBoardFX(board, boardFX, ROWS, COLUMNS);
+
+                    if (gameOver == true) {
+                        System.out.println("Game over");
+                        Platform.exit();
+                        System.exit(0);
+                    }
+
                 }
             }
         };
@@ -133,6 +141,8 @@ public class Main extends Application {
             for (int j = 0; j < 4; j++) {
                 if (targetBoard[i + ROW_OFFSET][j + COL_OFFSET] != FIXED_SQUARE) {
                     targetBoard[i + ROW_OFFSET][j + COL_OFFSET] = EMPTY_SQUARE;
+                } else {
+                    gameOver = true;
                 }
             }
         }
