@@ -2,11 +2,15 @@ package ee.itcollege.enos._mtammeka.klots;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.Background;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.Scene;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
+
+import java.util.ArrayList;
 
 public class Main extends Application {
     // TODO muutujate scope üle vaadata, palju ebavajalikku on siin ilmselt
@@ -20,6 +24,8 @@ public class Main extends Application {
     private long lastTimeStamp = 0;
     private static boolean fallingPieceExists = false;
     private static boolean gameOver = false; // kui tüki tekitamiseks pole ruumi... spawnAPiece ise kontrollib?
+    static ArrayList<Byte> commandQueue = new ArrayList<>();
+    public final static byte DOWN_ARROW = 1, LEFT_ARROW = 2, RIGHT_ARROW = 3;
 
     public static void main(String[] args) {
         launch(args);
@@ -71,6 +77,7 @@ public class Main extends Application {
                     if (!fallingPieceExists) {
                         spawnAPiece(board, 0, COLUMNS / 2, RANDOM);
                     } else {
+                        applyUserInput(board);
                         advanceAPiece(board);
 
                     }
@@ -87,6 +94,22 @@ public class Main extends Application {
                 }
             }
         };
+
+        scene.addEventHandler(KeyEvent.KEY_PRESSED, key -> {
+            // klotsi liigutamine vasakule-paremale
+
+            switch (key.getCode()) {
+                case LEFT:
+                    commandQueue.add(LEFT_ARROW);
+                    break;
+                case RIGHT:
+                    commandQueue.add(RIGHT_ARROW);
+                    break;
+                case DOWN:
+                    commandQueue.add(DOWN_ARROW);
+                    break;
+            }
+        });
 
         timer.start();
 
@@ -216,6 +239,36 @@ public class Main extends Application {
                 }
             }
 
+        }
+    }
+
+    static void applyUserInput(int[][] theBoard) {
+        if (!commandQueue.isEmpty()) {
+            switch (commandQueue.remove(0)) {
+                case LEFT_ARROW:
+                    System.out.println("official moving action");
+                    moveAPieceLeft(theBoard);
+                    break;
+            }
+        }
+
+    }
+    static void moveAPieceLeft(int[][] theBoard) {
+        // we start moving on last square on row 0 - theboard[0][theBoard[0].length]
+        // we move to the left "<-----"   ;  add up advancables and remove the rightmost and add the leftmost
+        int advancables = 0;
+        for (int i = 0; i < theBoard.length; i++) { // start on row 0, move down
+            for (int j = theBoard[i].length - 1; j >= 0; j--) { // start on last column
+                if (theBoard[i][j] == OCCUPIED_SQUARE) {
+                    advancables++;
+                } else if (theBoard[i][j] == EMPTY_SQUARE && advancables != 0) {
+                    theBoard[i][j] = OCCUPIED_SQUARE;
+                    theBoard[i][j + advancables] = EMPTY_SQUARE;
+                    advancables = 0;
+                }
+            }
+
+            System.out.println("one run");
         }
     }
 }
