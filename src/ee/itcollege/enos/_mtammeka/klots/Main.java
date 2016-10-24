@@ -203,19 +203,15 @@ public class Main extends Application {
         for (int j = 0; j < theBoard[0].length; j++) { // mitu tulpa
             advancables = 0;
 
-            for (int i = 0; i < theBoard.length; i++) { // mitu rida, st elementi tulbas
+            for (int i = 0; i < theBoard.length; i++) { // mitu elementi tulbas
                 if (theBoard[i][j] == OCCUPIED_SQUARE) {
                     advancables++;
-                    /*
-                    *
-                    * JÄTKA SIIT HAHA
-                    *
-                    * */
-                    // siin if-is ma väga usun et vasakult paremale hinnatakse '||' statementi ja kui
+                    // siin if-is ma tean et vasakult paremale hinnatakse '||' statementi ja kui
                     // i+1==theboard.length on TÕSI EHK JÄRGMIST ELEMENTI EI OLE
                     // siis ei hakata uurima KAS JÄRGMINE ELEMENT VÕIKS OLLA FIKSEERITUD RUUT
                     if (((i + 1) == theBoard.length) || (theBoard[i + 1][j] == FIXED_SQUARE))   { // oleme lõpus all ? või millegi vastas?
-
+                    // kogu selle implementatsiooni viga on et "pikk ots ees" liigub (st ei liigu) ka kontrollimise laine
+                        // kui võib nii väljendada seda tunnet
                         for (int k = 0; k < theBoard[0].length; k++) {
                             for (int l = 0; l < theBoard.length ; l++) {
                                 if (theBoard[l][k] == OCCUPIED_SQUARE)
