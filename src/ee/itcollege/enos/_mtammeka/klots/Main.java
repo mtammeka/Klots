@@ -223,6 +223,8 @@ public class Main extends Application {
 
         // we arrive here only if there is definitely more room for the piece to fall
         for (int j = 0; j < theBoard[0].length; j++) { // start on first column
+
+            COLUMN_LOOP:
             for (int i = theBoard.length - 1; i >= 0; i--) { //start on bottom-most square of this column, move up
                 if (theBoard[i][j] == OCCUPIED_SQUARE) {
                     advancables++;
@@ -231,7 +233,7 @@ public class Main extends Application {
                         theBoard[i][j] = EMPTY_SQUARE;
                         theBoard[i + advancables][j] = OCCUPIED_SQUARE;
                         // ok this column should be done now
-                        i = -1;
+                        break COLUMN_LOOP;
                     }
 
                 }
