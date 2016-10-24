@@ -1,4 +1,5 @@
 package ee.itcollege.enos._mtammeka.klots;
+import com.sun.xml.internal.fastinfoset.tools.FI_DOM_Or_XML_DOM_SAX_SAXEvent;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -159,7 +160,7 @@ public class Main extends Application {
 
         int[][] currentPiece = cube; // have to initialize to something..?
 
-        // clear from previous pieces in case rotating etc... maybe handle cleaning elswhere though?
+        // clear from previous pieces in case rotating etc... maybe handle cleaning elsewhere though?
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 4; j++) {
                 if (targetBoard[i + ROW_OFFSET][j + COL_OFFSET] != FIXED_SQUARE) {
@@ -197,45 +198,49 @@ public class Main extends Application {
     }
 
     static void advanceAPiece(int[][] theBoard) {
-        /*ascend top->down column by column, advance what's found*/
-        /*theBoard[row][column]*/
-        int advancables;
-        for (int j = 0; j < theBoard[0].length; j++) { // mitu tulpa
-            advancables = 0;
+        // go through theBoard from bottom up
+        // look for OCCUPIED_SQUARE-s, move them up
+        int advancables = 0;
+        int nextSquareDown = FIXED_SQUARE; // initialise to "the edge of the board"
+        
+        // all this does is check if any occupied piece has arrived to the bottom or to a fixed piece
+        for (int j = 0; j < theBoard[0].length; j++) { // start on first column
+            for (int i = theBoard.length - 1; i >= 0; i--) { //start on bottom-most square of this column, move up
+                if (theBoard[i][j] == OCCUPIED_SQUARE && nextSquareDown == FIXED_SQUARE) {
+                    for (int k = 0; k < theBoard.length; k++) {
+                        for (int l = 0; l < theBoard[k].length; l++) {
+                            if (theBoard[k][l] == OCCUPIED_SQUARE)
+                                theBoard[k][l] = FIXED_SQUARE;
+                        }
+                    }
+                    fallingPieceExists = false; // end of the line for this piece haha!!!
+                    return; // nothing left for advanceAPiece to do this time around
+                }
+                nextSquareDown = theBoard[i][j];
+            }
+            nextSquareDown = FIXED_SQUARE;
+        }
 
-            for (int i = 0; i < theBoard.length; i++) { // mitu elementi tulbas
+        // we arrive here only if there is definitely more room for the piece to fall
+        for (int j = 0; j < theBoard[0].length; j++) { // start on first column
+            for (int i = theBoard.length - 1; i >= 0; i--) { //start on bottom-most square of this column, move up
                 if (theBoard[i][j] == OCCUPIED_SQUARE) {
                     advancables++;
-                    // siin if-is ma tean et vasakult paremale hinnatakse '||' statementi ja kui
-                    // i+1==theboard.length on TÕSI EHK JÄRGMIST ELEMENTI EI OLE
-                    // siis ei hakata uurima KAS JÄRGMINE ELEMENT VÕIKS OLLA FIKSEERITUD RUUT
-                    if (((i + 1) == theBoard.length) || (theBoard[i + 1][j] == FIXED_SQUARE))   { // oleme lõpus all ? või millegi vastas?
-                    // kogu selle implementatsiooni viga on et "pikk ots ees" liigub (st ei liigu) ka kontrollimise laine
-                        // kui võib nii väljendada seda tunnet
-                        for (int k = 0; k < theBoard[0].length; k++) {
-                            for (int l = 0; l < theBoard.length ; l++) {
-                                if (theBoard[l][k] == OCCUPIED_SQUARE)
-                                    theBoard[l][k] = FIXED_SQUARE;
 
-                            }
-
-                        }
-
-                        //
-
-
-                        fallingPieceExists = false;
+                    if (i == 0 || theBoard[i - 1][j] == EMPTY_SQUARE) {
+                        theBoard[i][j] = EMPTY_SQUARE;
+                        theBoard[i + advancables][j] = OCCUPIED_SQUARE;
+                        // ok this column should be done now
+                        i = -1;
                     }
 
-
-                } else if (theBoard[i][j] == EMPTY_SQUARE && advancables != 0) {
-                    theBoard[i - advancables][j] = EMPTY_SQUARE;
-                    theBoard[i][j] = OCCUPIED_SQUARE;
-                    advancables = 0;
                 }
             }
-
+            advancables = 0;
         }
+
+
+
     }
 
     static void applyUserInput(int[][] theBoard) {
@@ -247,8 +252,8 @@ public class Main extends Application {
                     break;
             }
         }
-
     }
+
     static void moveAPieceLeft(int[][] theBoard) {
         // we start moving on last square on row 0 - theboard[0][theBoard[0].length]
         // we move to the left "<-----"   ;  add up advancables and remove the rightmost and add the leftmost
@@ -268,7 +273,6 @@ public class Main extends Application {
         }
     }
 }
-
 
         /* animationtimer sees toimub tegevus:
 
