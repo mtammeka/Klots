@@ -12,7 +12,7 @@ import javafx.stage.Stage;
 import java.util.ArrayList;
 
 public class Main extends Application {
-    // TODO muutujate scope üle vaadata, palju ebavajalikku on siin ilmselt
+    // TODO muutujate üle vaadata, palju ebavajalikku on siin ilmselt
     private final static int UP_L = 1, DOWN_L = 2, RIGHT_L = 3, LEFT_L = 4,
                             UP_TRANS_L = 5, DOWN_TRANS_L = 6, LEFT_TRANS_L = 7, RIGHT_TRANS_L = 8,
                             CUBE = 9,
@@ -41,11 +41,11 @@ public class Main extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         Pane pane = new Pane();
-        /*arguments for Scene constructor - parent root, x, y, fill color*/
+        /*Scene constructor'i argumendid - parent root, x, y, fill color*/
         Scene scene = new Scene(pane, SCENE_WIDTH, SCENE_HEIGHT, Color.CYAN);
         primaryStage.setScene(scene);
 
-        /*Initial drawing of "game board"*/
+        /*Mängulaua nähtavatele ruutedele vastavate objektide eksemplaride loomine*/
         Rectangle[][] boardFX = new Rectangle[ROWS][COLUMNS];
 
         for (int i = 0; i < ROWS; i++) {
@@ -62,11 +62,12 @@ public class Main extends Application {
             }
         }
         System.out.printf("COLUMNS: %d, ROWS: %d.\n", COLUMNS, ROWS);
-        //boardFX[14][0].setFill(Color.BLUE); // row 13 column 1 - paint blue
-        //boardFX[ROWS - 1][COLUMNS - 1].setFill(Color.YELLOW); // lowest rightmost square - paint yellow
+        // Orienteerumise näited:
+        //boardFX[14][0].setFill(Color.BLUE); // rida 13 tulp 1 - siniseks
+        //boardFX[ROWS - 1][COLUMNS - 1].setFill(Color.YELLOW); // kõige alumine-parempoolne ruut kollaseks
 
-        /*Actual game board - only info held by squares is their state -
-         * EMPTY, OCCUPIED or FIXED. The location of a square is known through [i][j] coordinates */
+        /* Luuakse "telgitagune" mängulaud, mängulaua ruutudel on kolm võimalikku seisundit:
+         * EMPTY, OCCUPIED, FIXED */
         int[][] board = new int[ROWS][COLUMNS];
         for (int i = 0; i < ROWS; i++) {
             for (int j = 0; j < COLUMNS; j++) {
@@ -74,11 +75,12 @@ public class Main extends Application {
             }
         }
 
+        // Anonüümne eksemplar AnimationTimer objektist - teeb võimalikuks, et ekraanil toimub midagi ajas
         AnimationTimer timer = new AnimationTimer() {
-
             @Override
             public void handle(long now) {
-                if (now - lastTimeStamp > (Math.pow(10, 9)) / 20) { //update ?xsekundis natiivne refresh on vist 60fps
+                // Mängupala liiguks muidu liiga kiiresti
+                if (now - lastTimeStamp > (Math.pow(10, 9)) / 20) { // now on nanosekundites
                     lastTimeStamp = now;
 
                     if (!fallingPieceExists) {
@@ -86,10 +88,9 @@ public class Main extends Application {
                     } else {
                         advanceAPiece(board);
                         applyUserInput(board);
-
                     }
-                    /* stuff happens */
 
+                    // "Telgitaguse" laua põhjal muudetakse vajadusel nähtavaid ruute
                     carryBoardToBoardFX(board, boardFX, ROWS, COLUMNS);
 
                     if (gameOver) {
@@ -102,9 +103,8 @@ public class Main extends Application {
             }
         };
 
+        // Puhver sisendkäskude jaoks tundus alguses hea mõte aga ilmselt mingi hetk tuleb lihtsamaks muuta
         scene.addEventHandler(KeyEvent.KEY_PRESSED, key -> {
-            // klotsi liigutamine vasakule-paremale
-
             switch (key.getCode()) {
                 case LEFT:
                     commandQueue.add(LEFT_ARROW);
@@ -119,7 +119,6 @@ public class Main extends Application {
         });
 
         timer.start();
-
         primaryStage.show();
 
     }
@@ -143,10 +142,7 @@ public class Main extends Application {
                 }
     }
 
-    static void spawnAPiece(int[][] targetBoard, final int ROW_OFFSET, final int COL_OFFSET, int pieceType) {
-        //TODO this function puts a complete piece in the target board
-        //expected to be called only if no pieces exist ... I guess
-
+    private static void spawnAPiece(int[][] targetBoard, final int ROW_OFFSET, final int COL_OFFSET, int pieceType) {
         int[][] upL =       { {OCCUPIED_SQUARE, EMPTY_SQUARE},                      // XO
                             {OCCUPIED_SQUARE, EMPTY_SQUARE},                        // XO
                             {OCCUPIED_SQUARE, OCCUPIED_SQUARE} };                   // XX
@@ -216,9 +212,10 @@ public class Main extends Application {
                             {OCCUPIED_SQUARE} };
 
 
-        int[][] currentPiece = cube; // have to initialize to something..?
+        int[][] currentPiece = cube; // muutujale tuleb mingi algväärtus anda
 
-        // clear from previous pieces in case rotating etc... maybe handle cleaning elsewhere though?
+        // edaspidi loodaks sama meetodit kasutada ka "roteerimisel," e langeva pala väljavahetamisel
+        // selle jaoks on vaja eelnevast palast vastav koht puhtaks teha. Siin on veel tegemist
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 4; j++) {
                 if (targetBoard[i + ROW_OFFSET][j + COL_OFFSET] != FIXED_SQUARE) {
@@ -230,8 +227,9 @@ public class Main extends Application {
         }
 
         if (pieceType == RANDOM)
-            pieceType = (int) (Math.random() * 19) + 1; //20 is random, 1..19 are pieces
+            pieceType = (int) (Math.random() * 19) + 1; //nr 20 ongi "juhuslik", 1..19 on konkreetsed palad
 
+        // jälle pikk kood - kui kunagi aega, sooviks asja elegantselt lahendada... HashMap-iga?
         switch (pieceType) {
             case UP_L:      currentPiece = upL;
                             break;
@@ -273,26 +271,21 @@ public class Main extends Application {
 
         }
 
+        // siin peaks ArrayCopy meetodit kasutama? kas ikka julgeb?
         for (int i = 0; i < currentPiece.length; i++) {
             for (int j = 0; j < currentPiece[i].length; j++) {
                 targetBoard[i + ROW_OFFSET][j + COL_OFFSET] = currentPiece[i][j];
             }
         }
-        // got this far so we definitely have a piece on the board now right?
+        // "telgitagusel" mängulaual on nüüd küll pala paigas
         fallingPieceExists = true;
     }
 
-    static void advanceAPiece(int[][] theBoard) {
-        // what happens if we are advancing up in a column and theres an OCC piece and above that a FIXED?
-
-        // go through theBoard from bottom up
-        // look for OCCUPIED_SQUARE-s, move them up
-        int occupiedCountOnThisRow = 0;
+    private static void advanceAPiece(int[][] theBoard) {
         int nextSquareDown = FIXED_SQUARE; // initialise to "the edge of the board"
         
-        // all this does is check if any occupied piece has arrived to the bottom or to a fixed piece
-        for (int j = 0; j < theBoard[0].length; j++) { // start on first column
-            for (int i = theBoard.length - 1; i >= 0; i--) { //start on bottom-most square of this column, move up
+        for (int j = 0; j < theBoard[0].length; j++) { // alustame esimese tulba peal
+            for (int i = theBoard.length - 1; i >= 0; i--) { // alustame tulba alumisest ruudust, e viimasel real
                 if (theBoard[i][j] == OCCUPIED_SQUARE && nextSquareDown == FIXED_SQUARE) {
                     for (int k = 0; k < theBoard.length; k++) {
                         for (int l = 0; l < theBoard[k].length; l++) {
@@ -300,25 +293,27 @@ public class Main extends Application {
                                 theBoard[k][l] = FIXED_SQUARE;
                         }
                     }
-                    fallingPieceExists = false; // end of the line for this piece haha!!!
-                    return; // nothing left for advanceAPiece to do this time around
+                    fallingPieceExists = false;
+                    return; // on selge et midagi edasi nihutada pole
                 }
                 nextSquareDown = theBoard[i][j];
             }
             nextSquareDown = FIXED_SQUARE;
         }
 
-        // we arrive here only if there is definitely more room for the piece to fall
-        for (int j = 0; j < theBoard[0].length; j++) { // start on first column
-
-                        for (int i = theBoard.length - 1; i >= 0; i--) { //start on bottom-most square of this column, move up
+        // siia jõuame vaid siis, kui kindlasti on ruumi ühe sammu võrra edasi nihutamiseks
+        int occupiedCountOnThisRow = 0;
+        for (int j = 0; j < theBoard[0].length; j++) { // alustame esimese tulba peal
+            for (int i = theBoard.length - 1; i >= 0; i--) { // alustame tulba kõige alumise ruudu peal
                 if (theBoard[i][j] == OCCUPIED_SQUARE) {
                     occupiedCountOnThisRow++;
 
+                    // nihutatavate klotside hulk on loetud kui jõuame tühja VÕI fikseeritud ruuduni
+                    // (lateraalliikumine võimaldab mängijal pala lükata mõne fikseeritud ruudu alla!)
                     if (i == 0 || (theBoard[i - 1][j] == EMPTY_SQUARE || theBoard[i - 1][j] == FIXED_SQUARE)) {
                         theBoard[i][j] = EMPTY_SQUARE;
                         theBoard[i + occupiedCountOnThisRow][j] = OCCUPIED_SQUARE;
-                        // ok this column should be done now
+                        // selles tulbas peaks kõik nihutatud olema mida nihutada vaja
                         break;
                     }
 
@@ -328,7 +323,7 @@ public class Main extends Application {
         }
     }
 
-    static void applyUserInput(int[][] theBoard) {
+    private static void applyUserInput(int[][] theBoard) {
         if (!commandQueue.isEmpty()) {
             switch (commandQueue.remove(0)) {
                 case LEFT_ARROW:
@@ -343,28 +338,23 @@ public class Main extends Application {
         }
     }
 
-    static void moveAPieceLeft(int[][] theBoard) {
-        // we start moving on last square on row 0 - theboard[0][theBoard[0].length]
-        // we move to the left "<-----"   ;  add up occupiedCountOnThisRow and remove the rightmost and add the leftmost
-
-        // feels like i don't have bounds checking here
-        // ..and since we are moving left bounds checking should start from the left
+    private static void moveAPieceLeft(int[][] theBoard) {
         int nextSquareLeft = FIXED_SQUARE;
-        for (int i = 0; i < theBoard.length; i++) { // start on first row, move down row by row
-            for (int j = 0; j < theBoard[i].length; j++) { // start on leftmost square on row i, move --> right
+        for (int i = 0; i < theBoard.length; i++) { // alustame esimesel real
+            for (int j = 0; j < theBoard[i].length; j++) { // alustame 1. tulbast e vasakpoolseimast ruudust
                 if (theBoard[i][j] == OCCUPIED_SQUARE && nextSquareLeft == FIXED_SQUARE) {
-                    System.out.println("i think no room left at" + i + " " + j);
-                    return; // not moving left definitely
+                    return; // vähemalt üks hõivatud ruut on kohe serva/fikseeritud ruudu kõrval
+                            // seega nihutada ei saa
                 }
                 nextSquareLeft = theBoard[i][j];
             }
-            nextSquareLeft = FIXED_SQUARE; // start at first square of next row, right
+            nextSquareLeft = FIXED_SQUARE; // jälle alustame servalt - sama hea kui fikseeritud ruudu kõrvalt
         }
 
-        // we made it here so there must be room left to move... LEFT haha
+        // jõudsime siia, järelikult on ruumi et 1 sammu võrra vasakule nihutada
         int occupiedCountOnThisRow = 0;
-        for (int i = 0; i < theBoard.length; i++) { // start on row 0, move down
-            for (int j = theBoard[i].length - 1; j >= 0; j--) { // start on last column
+        for (int i = 0; i < theBoard.length; i++) { // liigume ülemiselt realt alla
+            for (int j = theBoard[i].length - 1; j >= 0; j--) { // alustame parempoolseimast ruudust
                 if (theBoard[i][j] == OCCUPIED_SQUARE) {
                     occupiedCountOnThisRow++;
                 } else if (theBoard[i][j] == EMPTY_SQUARE && occupiedCountOnThisRow != 0) {
@@ -375,23 +365,22 @@ public class Main extends Application {
             }
         }
     }
-    static void moveAPieceRight(int[][] theBoard) {
+    private static void moveAPieceRight(int[][] theBoard) {
         int nextSquareRight = FIXED_SQUARE;
-        for (int i = 0; i < theBoard.length; i++) { // start on first row, move down row by row
-            for (int j = theBoard[i].length - 1; j >= 0; j--) { // start on rightmost square on row i, move <-- left
+        for (int i = 0; i < theBoard.length; i++) {
+            for (int j = theBoard[i].length - 1; j >= 0; j--) {
                 if (theBoard[i][j] == OCCUPIED_SQUARE && nextSquareRight == FIXED_SQUARE) {
-                    System.out.println("i think no room left at" + i + " " + j);
-                    return; // not moving right definitely
+                    return;
                 }
                 nextSquareRight = theBoard[i][j];
             }
-            nextSquareRight = FIXED_SQUARE; // start at first square of next row, right
+            nextSquareRight = FIXED_SQUARE;
         }
 
-        // again - it is established there is room left on the right
+        // ruumi jätkub üheks sammuks vähemalt
         int occupiedCountOnThisRow = 0;
-        for (int i = 0; i < theBoard.length; i++) { // start on row 0, move down
-            for (int j = 0; j < theBoard[i].length; j++) { // start on first column
+        for (int i = 0; i < theBoard.length; i++) {
+            for (int j = 0; j < theBoard[i].length; j++) {
                 if (theBoard[i][j] == OCCUPIED_SQUARE) {
                     occupiedCountOnThisRow++;
                 } else if (theBoard[i][j] == EMPTY_SQUARE && occupiedCountOnThisRow != 0) {
