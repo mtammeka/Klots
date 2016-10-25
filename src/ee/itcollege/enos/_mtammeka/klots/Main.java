@@ -1,4 +1,5 @@
 package ee.itcollege.enos._mtammeka.klots;
+import com.sun.org.apache.xpath.internal.SourceTree;
 import com.sun.xml.internal.fastinfoset.tools.FI_DOM_Or_XML_DOM_SAX_SAXEvent;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
@@ -240,9 +241,6 @@ public class Main extends Application {
             }
             advancables = 0;
         }
-
-
-
     }
 
     static void applyUserInput(int[][] theBoard) {
@@ -252,6 +250,10 @@ public class Main extends Application {
                     System.out.println("official moving action");
                     moveAPieceLeft(theBoard);
                     break;
+                case RIGHT_ARROW:
+                    System.out.println("right moving action");
+                    moveAPieceRight(theBoard);
+                    break;
             }
         }
     }
@@ -259,6 +261,22 @@ public class Main extends Application {
     static void moveAPieceLeft(int[][] theBoard) {
         // we start moving on last square on row 0 - theboard[0][theBoard[0].length]
         // we move to the left "<-----"   ;  add up advancables and remove the rightmost and add the leftmost
+
+        // feels like i don't have bounds checking here
+        // ..and since we are moving left bounds checking should start from the left
+        int nextSquareLeft = FIXED_SQUARE;
+        for (int i = 0; i < theBoard.length; i++) { // start on first row, move down row by row
+            for (int j = 0; j < theBoard[i].length; j++) { // start on leftmost square on row i, move --> right
+                if (theBoard[i][j] == OCCUPIED_SQUARE && nextSquareLeft == FIXED_SQUARE) {
+                    System.out.println("i think no room left at" + i + " " + j);
+                    return; // not moving left definitely
+                }
+                nextSquareLeft = theBoard[i][j];
+            }
+            nextSquareLeft = FIXED_SQUARE; // start at first square of next row, right
+        }
+
+        // we made it here so there must be room left to move... LEFT haha
         int advancables = 0;
         for (int i = 0; i < theBoard.length; i++) { // start on row 0, move down
             for (int j = theBoard[i].length - 1; j >= 0; j--) { // start on last column
@@ -267,6 +285,35 @@ public class Main extends Application {
                 } else if (theBoard[i][j] == EMPTY_SQUARE && advancables != 0) {
                     theBoard[i][j] = OCCUPIED_SQUARE;
                     theBoard[i][j + advancables] = EMPTY_SQUARE;
+                    advancables = 0;
+                }
+            }
+
+            System.out.println("one run");
+        }
+    }
+    static void moveAPieceRight(int[][] theBoard) {
+        int nextSquareRight = FIXED_SQUARE;
+        for (int i = 0; i < theBoard.length; i++) { // start on first row, move down row by row
+            for (int j = theBoard[i].length - 1; j >= 0; j--) { // start on rightmost square on row i, move <-- left
+                if (theBoard[i][j] == OCCUPIED_SQUARE && nextSquareRight == FIXED_SQUARE) {
+                    System.out.println("i think no room left at" + i + " " + j);
+                    return; // not moving right definitely
+                }
+                nextSquareRight = theBoard[i][j];
+            }
+            nextSquareRight = FIXED_SQUARE; // start at first square of next row, right
+        }
+
+        // again - it is established there is room left on the right
+        int advancables = 0;
+        for (int i = 0; i < theBoard.length; i++) { // start on row 0, move down
+            for (int j = 0; j < theBoard[i].length; j++) { // start on first column
+                if (theBoard[i][j] == OCCUPIED_SQUARE) {
+                    advancables++;
+                } else if (theBoard[i][j] == EMPTY_SQUARE && advancables != 0) {
+                    theBoard[i][j] = OCCUPIED_SQUARE;
+                    theBoard[i][j - advancables] = EMPTY_SQUARE;
                     advancables = 0;
                 }
             }
