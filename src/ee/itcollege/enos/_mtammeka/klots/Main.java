@@ -1,11 +1,8 @@
 package ee.itcollege.enos._mtammeka.klots;
-import com.sun.org.apache.xpath.internal.SourceTree;
-import com.sun.xml.internal.fastinfoset.tools.FI_DOM_Or_XML_DOM_SAX_SAXEvent;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.layout.Background;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.Scene;
@@ -16,7 +13,7 @@ import java.util.ArrayList;
 
 public class Main extends Application {
     // TODO muutujate scope üle vaadata, palju ebavajalikku on siin ilmselt
-    public final static int UP_L = 1, DOWN_L = 2, RIGHT_L = 3, LEFT_L = 4,
+    private final static int UP_L = 1, DOWN_L = 2, RIGHT_L = 3, LEFT_L = 4,
                             UP_TRANS_L = 5, DOWN_TRANS_L = 6, LEFT_TRANS_L = 7, RIGHT_TRANS_L = 8,
                             CUBE = 9,
                             UP_T = 10, LEFT_T = 11, RIGHT_T = 12, DOWN_T = 13,
@@ -25,7 +22,7 @@ public class Main extends Application {
                             DOWN_BAR = 18, UP_BAR = 19,
                             RANDOM = 20;
 
-    public final static int EMPTY_SQUARE = 1, OCCUPIED_SQUARE = 2, FIXED_SQUARE = 3;
+    private final static int EMPTY_SQUARE = 1, OCCUPIED_SQUARE = 2, FIXED_SQUARE = 3;
     private final static int SCENE_WIDTH = 400;
     private final static int SCENE_HEIGHT = 600;
     private final static int STEP = 20;
@@ -34,8 +31,8 @@ public class Main extends Application {
     private long lastTimeStamp = 0;
     private static boolean fallingPieceExists = false;
     private static boolean gameOver = false; // kui tüki tekitamiseks pole ruumi... spawnAPiece ise kontrollib?
-    static ArrayList<Byte> commandQueue = new ArrayList<>();
-    public final static byte DOWN_ARROW = 1, LEFT_ARROW = 2, RIGHT_ARROW = 3;
+    private static ArrayList<Byte> commandQueue = new ArrayList<>();
+    private final static byte DOWN_ARROW = 1, LEFT_ARROW = 2, RIGHT_ARROW = 3;
 
     public static void main(String[] args) {
         launch(args);
@@ -81,21 +78,21 @@ public class Main extends Application {
 
             @Override
             public void handle(long now) {
-                if (now - lastTimeStamp > (Math.pow(10, 9)) / 10) { //update ?xsekundis natiivne refresh on vist 60fps
+                if (now - lastTimeStamp > (Math.pow(10, 9)) / 20) { //update ?xsekundis natiivne refresh on vist 60fps
                     lastTimeStamp = now;
 
                     if (!fallingPieceExists) {
                         spawnAPiece(board, 0, COLUMNS / 2, RANDOM);
                     } else {
-                        applyUserInput(board);
                         advanceAPiece(board);
+                        applyUserInput(board);
 
                     }
                     /* stuff happens */
 
                     carryBoardToBoardFX(board, boardFX, ROWS, COLUMNS);
 
-                    if (gameOver == true) {
+                    if (gameOver) {
                         System.out.println("Game over");
                         Platform.exit();
                         System.exit(0);
@@ -286,9 +283,11 @@ public class Main extends Application {
     }
 
     static void advanceAPiece(int[][] theBoard) {
+        // what happens if we are advancing up in a column and theres an OCC piece and above that a FIXED?
+
         // go through theBoard from bottom up
         // look for OCCUPIED_SQUARE-s, move them up
-        int advancables = 0;
+        int occupiedCountOnThisRow = 0;
         int nextSquareDown = FIXED_SQUARE; // initialise to "the edge of the board"
         
         // all this does is check if any occupied piece has arrived to the bottom or to a fixed piece
@@ -312,21 +311,20 @@ public class Main extends Application {
         // we arrive here only if there is definitely more room for the piece to fall
         for (int j = 0; j < theBoard[0].length; j++) { // start on first column
 
-            COLUMN_LOOP:
-            for (int i = theBoard.length - 1; i >= 0; i--) { //start on bottom-most square of this column, move up
+                        for (int i = theBoard.length - 1; i >= 0; i--) { //start on bottom-most square of this column, move up
                 if (theBoard[i][j] == OCCUPIED_SQUARE) {
-                    advancables++;
+                    occupiedCountOnThisRow++;
 
-                    if (i == 0 || theBoard[i - 1][j] == EMPTY_SQUARE) {
+                    if (i == 0 || (theBoard[i - 1][j] == EMPTY_SQUARE || theBoard[i - 1][j] == FIXED_SQUARE)) {
                         theBoard[i][j] = EMPTY_SQUARE;
-                        theBoard[i + advancables][j] = OCCUPIED_SQUARE;
+                        theBoard[i + occupiedCountOnThisRow][j] = OCCUPIED_SQUARE;
                         // ok this column should be done now
-                        break COLUMN_LOOP;
+                        break;
                     }
 
                 }
             }
-            advancables = 0;
+            occupiedCountOnThisRow = 0;
         }
     }
 
@@ -347,7 +345,7 @@ public class Main extends Application {
 
     static void moveAPieceLeft(int[][] theBoard) {
         // we start moving on last square on row 0 - theboard[0][theBoard[0].length]
-        // we move to the left "<-----"   ;  add up advancables and remove the rightmost and add the leftmost
+        // we move to the left "<-----"   ;  add up occupiedCountOnThisRow and remove the rightmost and add the leftmost
 
         // feels like i don't have bounds checking here
         // ..and since we are moving left bounds checking should start from the left
@@ -364,19 +362,17 @@ public class Main extends Application {
         }
 
         // we made it here so there must be room left to move... LEFT haha
-        int advancables = 0;
+        int occupiedCountOnThisRow = 0;
         for (int i = 0; i < theBoard.length; i++) { // start on row 0, move down
             for (int j = theBoard[i].length - 1; j >= 0; j--) { // start on last column
                 if (theBoard[i][j] == OCCUPIED_SQUARE) {
-                    advancables++;
-                } else if (theBoard[i][j] == EMPTY_SQUARE && advancables != 0) {
+                    occupiedCountOnThisRow++;
+                } else if (theBoard[i][j] == EMPTY_SQUARE && occupiedCountOnThisRow != 0) {
                     theBoard[i][j] = OCCUPIED_SQUARE;
-                    theBoard[i][j + advancables] = EMPTY_SQUARE;
-                    advancables = 0;
+                    theBoard[i][j + occupiedCountOnThisRow] = EMPTY_SQUARE;
+                    occupiedCountOnThisRow = 0;
                 }
             }
-
-            System.out.println("one run");
         }
     }
     static void moveAPieceRight(int[][] theBoard) {
@@ -393,49 +389,17 @@ public class Main extends Application {
         }
 
         // again - it is established there is room left on the right
-        int advancables = 0;
+        int occupiedCountOnThisRow = 0;
         for (int i = 0; i < theBoard.length; i++) { // start on row 0, move down
             for (int j = 0; j < theBoard[i].length; j++) { // start on first column
                 if (theBoard[i][j] == OCCUPIED_SQUARE) {
-                    advancables++;
-                } else if (theBoard[i][j] == EMPTY_SQUARE && advancables != 0) {
+                    occupiedCountOnThisRow++;
+                } else if (theBoard[i][j] == EMPTY_SQUARE && occupiedCountOnThisRow != 0) {
                     theBoard[i][j] = OCCUPIED_SQUARE;
-                    theBoard[i][j - advancables] = EMPTY_SQUARE;
-                    advancables = 0;
+                    theBoard[i][j - occupiedCountOnThisRow] = EMPTY_SQUARE;
+                    occupiedCountOnThisRow = 0;
                 }
             }
-
-            System.out.println("one run");
         }
     }
 }
-
-        /* animationtimer sees toimub tegevus:
-
-             - on olemas staatusmuutuja - kas vabalangev klots on olemas v ei? kui ei, loositakse uus.
-             - kui vabalangevat klotsi ei ole, nö spawnitakse klots - maatriksis märgitakse ära keskel
-             üleval klotsi kujule vastav ala. JA staatusmuutuja=on_olemas_Vabalangev_klots
-
-             - ps maatriks pole boolean - on kolm olekut: ruut on vaba, ruutu täidab hetkel nö langeva
-             klotsi osa; või kolmas variant - ruutu täidab _fikseeritud_ klotsi osa
-
-             - igal juhul skännib iga tsükli jooksul maatriksit läbi "klotsiliigutamise jõud"
-                - käib ülevalt alla maatriksi läbi, kui leiab nö vabalangeva klotsi
-                        - siis kontrollib kas alumine ruut on vaba....
-                            - seda peab kontrollima KÕIGI vabalangevate klotside kohta
-                                - kui olid KÕIK alumised vabad siis liigutab kõiki langevaid ruute allapoole
-                        - kui kasvõi üks ei olnud alt vaba, käib kõik klotsi elemendid läbi fikseerides need
-                                JA muudab staatusmuutuja, et spawnitakse uus langev klots
-
-             - SIIN ERALDI LATERAALSE LIIKUMISE JÕUD KA
-             - mingi teine skänner otsib täiesti täis rida (fikseeritud ruute), mis eemaldatakse ja antakse punkte
-                - pärast eemaldamist liigutatakse _kogu_ülemist osa allapoole, SH "FIKSEERITUD" RUUDUD
-
-             - kuskil on keyeventlistener, mis EI TOIMI OTSE, vaid saadab kasutaja käigud kuskile puhvrisse
-             - puhvrit loetakse ka "klotsiliigutamise" juures - 2x samm kui oli nooleklahv alla
-             - kui kasutaja on tahtnud lateraalset liigutamisest, on eraldi samm lateraalse liigutamise kohta
-             (Vt eespool)
-
-             - lõpuks joonistatakse hetkeseis ekraanile
-
-         */
