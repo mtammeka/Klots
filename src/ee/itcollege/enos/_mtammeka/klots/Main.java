@@ -16,7 +16,15 @@ import java.util.ArrayList;
 
 public class Main extends Application {
     // TODO muutujate scope üle vaadata, palju ebavajalikku on siin ilmselt
-    public final static int UP_L = 6, DOWN_L = 2, RIGHT_L = 3, LEFT_L = 4, CUBE = 5, RANDOM = 1; //etc
+    public final static int UP_L = 1, DOWN_L = 2, RIGHT_L = 3, LEFT_L = 4,
+                            UP_TRANS_L = 5, DOWN_TRANS_L = 6, LEFT_TRANS_L = 7, RIGHT_TRANS_L = 8,
+                            CUBE = 9,
+                            UP_T = 10, LEFT_T = 11, RIGHT_T = 12, DOWN_T = 13,
+                            UP_DOWN_S = 14, LEFT_RIGHT_S = 15,
+                            UP_DOWN_TRANS_S = 16, LEFT_RIGHT_TRANS_S = 17,
+                            DOWN_BAR = 18, UP_BAR = 19,
+                            RANDOM = 20;
+
     public final static int EMPTY_SQUARE = 1, OCCUPIED_SQUARE = 2, FIXED_SQUARE = 3;
     private final static int SCENE_WIDTH = 400;
     private final static int SCENE_HEIGHT = 600;
@@ -153,11 +161,63 @@ public class Main extends Application {
         int[][] leftL =     { {OCCUPIED_SQUARE, OCCUPIED_SQUARE, OCCUPIED_SQUARE},  // XXX
                             {OCCUPIED_SQUARE, EMPTY_SQUARE, EMPTY_SQUARE} };        // XOO
 
-        int[][] rightL =    { {OCCUPIED_SQUARE, EMPTY_SQUARE, EMPTY_SQUARE},        // XOO
+        int[][] rightL =    { {EMPTY_SQUARE, EMPTY_SQUARE, OCCUPIED_SQUARE},        // OOX
                             {OCCUPIED_SQUARE, OCCUPIED_SQUARE, OCCUPIED_SQUARE} };  // XXX
+
+        int[][] upTransL =  { {EMPTY_SQUARE, OCCUPIED_SQUARE},                      // OX
+                            {EMPTY_SQUARE, OCCUPIED_SQUARE},                        // OX
+                            {OCCUPIED_SQUARE, OCCUPIED_SQUARE} };                   // XX
+
+
+        int[][] downTransL = { {OCCUPIED_SQUARE, OCCUPIED_SQUARE},                  // XX
+                            {OCCUPIED_SQUARE, EMPTY_SQUARE},                        // XO
+                            {OCCUPIED_SQUARE, EMPTY_SQUARE} };                      // XO
+
+        int[][] leftTransL = { {OCCUPIED_SQUARE, OCCUPIED_SQUARE, OCCUPIED_SQUARE}, // XXX
+                            {EMPTY_SQUARE, EMPTY_SQUARE, OCCUPIED_SQUARE} };        // 00X
+
+        int[][] rightTransL = { {OCCUPIED_SQUARE, EMPTY_SQUARE, EMPTY_SQUARE},      // X00
+                            {OCCUPIED_SQUARE, OCCUPIED_SQUARE, OCCUPIED_SQUARE}};   // XXX
+
 
         int[][] cube =      { {OCCUPIED_SQUARE, OCCUPIED_SQUARE},                   // XX
                             {OCCUPIED_SQUARE, OCCUPIED_SQUARE} };                   // XX
+
+        int[][] upT =       { {EMPTY_SQUARE, OCCUPIED_SQUARE, EMPTY_SQUARE},        // OXO
+                            {OCCUPIED_SQUARE, OCCUPIED_SQUARE, OCCUPIED_SQUARE }};  // XXX
+
+        int[][] leftT =     { {EMPTY_SQUARE, OCCUPIED_SQUARE},                      // OX
+                            {OCCUPIED_SQUARE, OCCUPIED_SQUARE},                     // XX
+                            {EMPTY_SQUARE, OCCUPIED_SQUARE} };                      // OX
+
+        int[][] rightT =    { {OCCUPIED_SQUARE, EMPTY_SQUARE},                      // XO
+                            {OCCUPIED_SQUARE, OCCUPIED_SQUARE},                     // XX
+                            {OCCUPIED_SQUARE, EMPTY_SQUARE} };                      // XO
+
+        int[][] downT =     { {OCCUPIED_SQUARE, OCCUPIED_SQUARE, OCCUPIED_SQUARE},  // XXX
+                            {EMPTY_SQUARE, OCCUPIED_SQUARE, EMPTY_SQUARE} };        // OXO
+
+        int[][] upDownS =   { {OCCUPIED_SQUARE, EMPTY_SQUARE},                      // XO
+                            {OCCUPIED_SQUARE, OCCUPIED_SQUARE},                     // XX
+                            {EMPTY_SQUARE, OCCUPIED_SQUARE} };                      // OX
+
+        int[][] leftRightS = { {EMPTY_SQUARE, OCCUPIED_SQUARE, OCCUPIED_SQUARE},    // OXX
+                            {OCCUPIED_SQUARE, OCCUPIED_SQUARE, EMPTY_SQUARE} };     // XXO
+
+        int[][] upDownTransS = { {EMPTY_SQUARE, OCCUPIED_SQUARE},                   // OX
+                            {OCCUPIED_SQUARE, OCCUPIED_SQUARE},                     // XX
+                            {OCCUPIED_SQUARE, EMPTY_SQUARE} };                      // XO
+
+        int[][] leftRightTransS = { {OCCUPIED_SQUARE, OCCUPIED_SQUARE, EMPTY_SQUARE},// XXO
+                            {EMPTY_SQUARE, OCCUPIED_SQUARE, OCCUPIED_SQUARE} };     // OXX
+
+        int[][] downBar =   { {OCCUPIED_SQUARE, OCCUPIED_SQUARE, OCCUPIED_SQUARE, OCCUPIED_SQUARE} };
+
+        int[][] upBar =     { {OCCUPIED_SQUARE},
+                            {OCCUPIED_SQUARE},
+                            {OCCUPIED_SQUARE},
+                            {OCCUPIED_SQUARE} };
+
 
         int[][] currentPiece = cube; // have to initialize to something..?
 
@@ -172,9 +232,8 @@ public class Main extends Application {
             }
         }
 
-        //UP_L = 6, DOWN_L = 2, RIGHT_L = 3, LEFT_L = 4, CUBE = 5, RANDOM = 1; //etc
         if (pieceType == RANDOM)
-            pieceType = (int) (Math.random() * 5) + 2; //1 is random, 2...6 are pieces
+            pieceType = (int) (Math.random() * 19) + 1; //20 is random, 1..19 are pieces
 
         switch (pieceType) {
             case UP_L:      currentPiece = upL;
@@ -185,8 +244,36 @@ public class Main extends Application {
                             break;
             case LEFT_L:    currentPiece = leftL;
                             break;
+            case UP_TRANS_L: currentPiece = upTransL;
+                            break;
+            case DOWN_TRANS_L: currentPiece = downTransL;
+                            break;
+            case LEFT_TRANS_L: currentPiece = leftTransL;
+                            break;
+            case RIGHT_TRANS_L: currentPiece = rightTransL;
+                            break;
             case CUBE:      currentPiece = cube;
                             break;
+            case UP_T:      currentPiece = upT;
+                            break;
+            case LEFT_T:    currentPiece = leftT;
+                            break;
+            case RIGHT_T:   currentPiece = rightT;
+                            break;
+            case DOWN_T:    currentPiece = downT;
+                            break;
+            case UP_DOWN_S: currentPiece = upDownS;
+                            break;
+            case LEFT_RIGHT_S: currentPiece = leftRightS;
+                            break;
+            case UP_DOWN_TRANS_S: currentPiece = upDownTransS;
+                            break;
+            case LEFT_RIGHT_TRANS_S: currentPiece = leftRightTransS;
+                            break;
+            case DOWN_BAR:  currentPiece = downBar;
+                            break;
+            case UP_BAR:    currentPiece = upBar;
+
         }
 
         for (int i = 0; i < currentPiece.length; i++) {
