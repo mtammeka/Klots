@@ -8,11 +8,11 @@ import javafx.scene.paint.Color;
 import javafx.scene.Scene;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
-
-import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 public class Main extends Application {
-    // TODO muutujate üle vaadata, palju ebavajalikku on siin ilmselt
+    private final static int refreshRate = 12;
     private final static int UP_L = 1, DOWN_L = 2, RIGHT_L = 3, LEFT_L = 4,
                             UP_TRANS_L = 5, DOWN_TRANS_L = 6, LEFT_TRANS_L = 7, RIGHT_TRANS_L = 8,
                             CUBE = 9,
@@ -21,18 +21,18 @@ public class Main extends Application {
                             UP_DOWN_TRANS_S = 16, LEFT_RIGHT_TRANS_S = 17,
                             DOWN_BAR = 18, UP_BAR = 19,
                             RANDOM = 20;
-
+    private static int globalCurrentPieceType = 0;
     private final static int EMPTY_SQUARE = 1, OCCUPIED_SQUARE = 2, FIXED_SQUARE = 3;
     private final static int SCENE_WIDTH = 400;
     private final static int SCENE_HEIGHT = 600;
     private final static int STEP = 20;
     private final static int ROWS = SCENE_HEIGHT / STEP;
     private final static int COLUMNS = SCENE_WIDTH / STEP;
-    private long lastTimeStamp = 0;
+    private static long lastTimeStamp = 0;
     private static boolean fallingPieceExists = false;
     private static boolean gameOver = false; // kui tüki tekitamiseks pole ruumi... spawnAPiece ise kontrollib?
-    private static ArrayList<Byte> commandQueue = new ArrayList<>();
-    private final static byte DOWN_ARROW = 1, LEFT_ARROW = 2, RIGHT_ARROW = 3;
+    private static Set<Byte> commandQueue = new LinkedHashSet<>();
+    private final static byte DOWN_ARROW = 1, LEFT_ARROW = 2, RIGHT_ARROW = 3, UP_ARROW = 4;
 
     public static void main(String[] args) {
         launch(args);
@@ -80,7 +80,7 @@ public class Main extends Application {
             @Override
             public void handle(long now) {
                 // Mängupala liiguks muidu liiga kiiresti
-                if (now - lastTimeStamp > (Math.pow(10, 9)) / 20) { // now on nanosekundites
+                if (now - lastTimeStamp > (Math.pow(10, 9)) / refreshRate) { // now on nanosekundites
                     lastTimeStamp = now;
 
                     if (!fallingPieceExists) {
@@ -114,6 +114,9 @@ public class Main extends Application {
                     break;
                 case DOWN:
                     commandQueue.add(DOWN_ARROW);
+                    break;
+                case UP:
+                    commandQueue.add(UP_ARROW);
                     break;
             }
         });
@@ -226,8 +229,10 @@ public class Main extends Application {
             }
         }
 
-        if (pieceType == RANDOM)
+        if (pieceType == RANDOM) {
             pieceType = (int) (Math.random() * 19) + 1; //nr 20 ongi "juhuslik", 1..19 on konkreetsed palad
+            globalCurrentPieceType = pieceType; // ei tea kas seda on vaja
+        }
 
         // jälle pikk kood - kui kunagi aega, sooviks asja elegantselt lahendada... HashMap-iga?
         switch (pieceType) {
@@ -324,29 +329,52 @@ public class Main extends Application {
     }
 
     private static void applyUserInput(int[][] theBoard) {
-        if (!commandQueue.isEmpty()) {
-            switch (commandQueue.remove(0)) {
-                case LEFT_ARROW:
-                    System.out.println("official moving action");
-                    moveAPieceLeft(theBoard);
-                    break;
-                case RIGHT_ARROW:
-                    System.out.println("right moving action");
-                    moveAPieceRight(theBoard);
-                    break;
+
+        while (!commandQueue.isEmpty()) {
+
+            for (byte thisKeyStroke : commandQueue) {
+                switch (thisKeyStroke) {
+                    case LEFT_ARROW:
+                        moveAPieceLeft(theBoard);
+                        commandQueue.remove(LEFT_ARROW);
+                        break;
+                    case RIGHT_ARROW:
+                        moveAPieceRight(theBoard);
+                        commandQueue.remove(RIGHT_ARROW);
+                        break;
+                    case DOWN_ARROW:
+                        advanceAPiece(theBoard); // ei tea kas on nii lihtne
+                        commandQueue.remove(DOWN_ARROW);
+                        break;
+                    case UP_ARROW:
+                        // ok nii et roteerimine
+                        // ...see meetod oligi liiga lühike
+                        // -- vaatame mis on globalCurrentPieceType
+                        // -- otsime nt praeguse klotsi kõige ülemisel real kõige vasakpoolsema ruudu
+                        // -- uue pala joonistamise koordinaat (spawnAPiece(.., rida, tulp, ..) saadakse
+                        // -- sellele koordinaadile pala tüübile ja soovitud rotatsioonile vastavat sammu liites
+                        // -- (milline samm mille jaoks on vajalik tuleb eraldi välja vaadata vist)
+                        // -- siis 1.) testijoonistamine (kas on ruumi?) 2.) vana pala kustutamine 3.) reaalne
+                        // -- uue joonistamine
+
+                        commandQueue.remove(UP_ARROW);
+                        break;
+                }
             }
         }
     }
 
     private static void moveAPieceLeft(int[][] theBoard) {
         int nextSquareLeft = FIXED_SQUARE;
-        for (int i = 0; i < theBoard.length; i++) { // alustame esimesel real
-            for (int j = 0; j < theBoard[i].length; j++) { // alustame 1. tulbast e vasakpoolseimast ruudust
-                if (theBoard[i][j] == OCCUPIED_SQUARE && nextSquareLeft == FIXED_SQUARE) {
+        // for (int i = 0; i < theBoard.length; i++) { // alustame esimesel real
+        // sama mis nested for tsüklid - tegelikult pole hea valik kuna segab ridadest-tulpadest mõtlemist
+        for (int[] thisBoard : theBoard) {
+            for (int j = 0; j < thisBoard.length; j++) { // alustame 1. tulbast e vasakpoolseimast ruudust
+                if (thisBoard[j] == OCCUPIED_SQUARE && nextSquareLeft == FIXED_SQUARE) {
                     return; // vähemalt üks hõivatud ruut on kohe serva/fikseeritud ruudu kõrval
                             // seega nihutada ei saa
                 }
-                nextSquareLeft = theBoard[i][j];
+                nextSquareLeft = thisBoard[j];
             }
             nextSquareLeft = FIXED_SQUARE; // jälle alustame servalt - sama hea kui fikseeritud ruudu kõrvalt
         }
