@@ -30,7 +30,7 @@ public class Main extends Application {
                             FIXED_SQUARE = 3, COMPLETED_SQUARE = 4;
     private final static int STEP = 20;
     private final static int ROWS = 30;
-    private final static int COLUMNS = 15;
+    private final static int COLUMNS = 14;
     private final static int SCENE_WIDTH = COLUMNS * STEP;
     private final static int SCENE_HEIGHT = (ROWS * STEP) + 100;
     private static int score = 0;
@@ -580,21 +580,16 @@ public class Main extends Application {
         int points = 1;
 
         for (int i = 0; i < theBoard.length; i++) { // rida-haaval
-            LOOP_ON_CURRENT_ROW:
+
             for (int j = 0; j < theBoard[i].length; j++) {
                 if (theBoard[i][j] != FIXED_SQUARE) {
-                    break LOOP_ON_CURRENT_ROW;
-                } else if (theBoard[i].length + 1 == j) {
-                   // TODO juba siin on midagi valesti ridade lugemisega
+                    break;
+                } else if ((theBoard[i].length - 1) == j) {
 
                     // jõudsime siia - täitunud rida on leitud
                     System.out.println("rida " + i + " on valmis");
                     for (int k = 0; k < theBoard[i].length; k++) {
-                        // theBoard[i][k] = COMPLETED_SQUARE;
-
-
-
-                        // TODO ok siit jätkame
+                        theBoard[i][k] = COMPLETED_SQUARE;
 
                     }
                 }
@@ -602,6 +597,21 @@ public class Main extends Application {
         }
 
         // jõudsime siia - read mis tuleb eemaldada on märgistatud
+        for (int j = 0; j < theBoard[0].length; j++) {
+            for (int i = theBoard.length - 1; i >= 0; i--) {
+                if (theBoard[i][j] == COMPLETED_SQUARE) {
+
+                    // muidugi ei muuda me neid tagasi
+                    // see on kohatäide, edaspidi:
+                    // -- tulp käiakse alt üles läbi
+                    // -- kui jõutakse COMPL.-ni eemaldatakse see, kogu "NON_OCC"! sisu trimmitakse järgi
+                    // -- ja hakatakse uuesti kuni tulp läbitud
+                    theBoard[i][j] = FIXED_SQUARE;
+                }
+            }
+
+        }
+
 
         score += points;
         return score;
