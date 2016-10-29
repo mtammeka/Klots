@@ -2,12 +2,16 @@ package ee.itcollege.enos._mtammeka.klots;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.scene.Group;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.Scene;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
+
+import java.util.ConcurrentModificationException;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -22,15 +26,17 @@ public class Main extends Application {
                             DOWN_BAR = 18, UP_BAR = 19,
                             RANDOM = 20;
     private static int globalCurrentPieceType = 0;
-    private final static int EMPTY_SQUARE = 1, OCCUPIED_SQUARE = 2, FIXED_SQUARE = 3;
-    private final static int SCENE_WIDTH = 400;
-    private final static int SCENE_HEIGHT = 600;
+    private final static int EMPTY_SQUARE = 1, OCCUPIED_SQUARE = 2,
+                            FIXED_SQUARE = 3, COMPLETED_SQUARE = 4;
     private final static int STEP = 20;
-    private final static int ROWS = SCENE_HEIGHT / STEP;
-    private final static int COLUMNS = SCENE_WIDTH / STEP;
+    private final static int ROWS = 30;
+    private final static int COLUMNS = 15;
+    private final static int SCENE_WIDTH = COLUMNS * STEP;
+    private final static int SCENE_HEIGHT = (ROWS * STEP) + 100;
+    private static int score = 0;
     private static long lastTimeStamp = 0;
     private static boolean fallingPieceExists = false;
-    private static boolean gameOver = false; // kui tüki tekitamiseks pole ruumi... spawnAPiece ise kontrollib?
+    private static boolean gameOver = false;
     private static Set<Byte> commandQueue = new LinkedHashSet<>();
     private final static byte DOWN_ARROW = 1, LEFT_ARROW = 2, RIGHT_ARROW = 3, UP_ARROW = 4;
 
@@ -44,6 +50,16 @@ public class Main extends Application {
         /*Scene constructor'i argumendid - parent root, x, y, fill color*/
         Scene scene = new Scene(pane, SCENE_WIDTH, SCENE_HEIGHT, Color.CYAN);
         primaryStage.setScene(scene);
+
+        // Tekstiala mängu nimega, skooriga jne
+        Group group = new Group();
+        Text text = new Text("TETRIS\nTETRIS");
+        group.getChildren().addAll(text);
+        pane.getChildren().addAll(group);
+        group.setLayoutX((SCENE_WIDTH - text.getLayoutBounds().getWidth()) / 2);
+        group.setLayoutY(ROWS * STEP + 50);
+
+        text.setText("TETRIS\nTETRIS");
 
         /*Mängulaua nähtavatele ruutedele vastavate objektide eksemplaride loomine*/
         Rectangle[][] boardFX = new Rectangle[ROWS][COLUMNS];
@@ -61,6 +77,7 @@ public class Main extends Application {
                 pane.getChildren().add(boardFX[i][j]);
             }
         }
+
         System.out.printf("COLUMNS: %d, ROWS: %d.\n", COLUMNS, ROWS);
         // Orienteerumise näited:
         //boardFX[14][0].setFill(Color.BLUE); // rida 13 tulp 1 - siniseks
@@ -81,13 +98,26 @@ public class Main extends Application {
             public void handle(long now) {
                 // Mängupala liiguks muidu liiga kiiresti
                 if (now - lastTimeStamp > (Math.pow(10, 9)) / refreshRate) { // now on nanosekundites
+
                     lastTimeStamp = now;
 
                     if (!fallingPieceExists) {
-                        spawnAPiece(board, 0, COLUMNS / 2, RANDOM);
+                        // mäng algas või klots just fikseeriti
+                        // vaja kokku lugeda täiesti fikseeritud read ja need "vahelt ära tõmmata"
+                        // anda punktid
+                        text.setText("Skoor: " + removeCompletedLines(board));
+                        group.setLayoutX((SCENE_WIDTH - text.getLayoutBounds().getWidth()) / 2);
+
+                        // mäng läbi, kui uue klotsi tekitamisele jääb midagi ette
+                        gameOver = !spawnAPiece(board, 0, COLUMNS / 2, RANDOM);
                     } else {
                         advanceAPiece(board);
-                        applyUserInput(board);
+                        try {
+                            applyUserInput(board);
+                        } catch (ConcurrentModificationException e) {
+                            // ära tee midagi haha
+                            // ("produktsiooniversioonis" ikkagi ilmselt teeme)
+                        }
                     }
 
                     // "Telgitaguse" laua põhjal muudetakse vajadusel nähtavaid ruute
@@ -145,14 +175,14 @@ public class Main extends Application {
                 }
     }
 
-    private static void spawnAPiece(int[][] targetBoard, final int ROW_OFFSET, final int COL_OFFSET, int pieceType) {
+    private static boolean spawnAPiece(int[][] targetBoard, final int ROW_OFFSET, final int COL_OFFSET, int pieceType) {
         int[][] upL =       { {OCCUPIED_SQUARE, EMPTY_SQUARE},                      // XO
                             {OCCUPIED_SQUARE, EMPTY_SQUARE},                        // XO
                             {OCCUPIED_SQUARE, OCCUPIED_SQUARE} };                   // XX
 
-        int[][] downL =     { {OCCUPIED_SQUARE, EMPTY_SQUARE},                      // XX
-                            {OCCUPIED_SQUARE, EMPTY_SQUARE},                        // OX
-                            {OCCUPIED_SQUARE, OCCUPIED_SQUARE} };                   // OX
+        int[][] downL =     { {OCCUPIED_SQUARE, OCCUPIED_SQUARE},                   // XX
+                            {EMPTY_SQUARE, OCCUPIED_SQUARE},                        // OX
+                            {EMPTY_SQUARE, OCCUPIED_SQUARE} };                      // OX
 
         int[][] leftL =     { {OCCUPIED_SQUARE, OCCUPIED_SQUARE, OCCUPIED_SQUARE},  // XXX
                             {OCCUPIED_SQUARE, EMPTY_SQUARE, EMPTY_SQUARE} };        // XOO
@@ -219,7 +249,8 @@ public class Main extends Application {
 
         // edaspidi loodaks sama meetodit kasutada ka "roteerimisel," e langeva pala väljavahetamisel
         // selle jaoks on vaja eelnevast palast vastav koht puhtaks teha. Siin on veel tegemist
-        for (int i = 0; i < 4; i++) {
+        // ... praegu tegime kustutamiseks eraldi meetodi, siit kommenteerime välja
+        /*for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 4; j++) {
                 if (targetBoard[i + ROW_OFFSET][j + COL_OFFSET] != FIXED_SQUARE) {
                     targetBoard[i + ROW_OFFSET][j + COL_OFFSET] = EMPTY_SQUARE;
@@ -227,12 +258,13 @@ public class Main extends Application {
                     gameOver = true;
                 }
             }
-        }
+        }*/
 
         if (pieceType == RANDOM) {
             pieceType = (int) (Math.random() * 19) + 1; //nr 20 ongi "juhuslik", 1..19 on konkreetsed palad
-            globalCurrentPieceType = pieceType; // ei tea kas seda on vaja
         }
+        
+        globalCurrentPieceType = pieceType; // ei tea kas seda on vaja
 
         // jälle pikk kood - kui kunagi aega, sooviks asja elegantselt lahendada... HashMap-iga?
         switch (pieceType) {
@@ -273,17 +305,24 @@ public class Main extends Application {
             case DOWN_BAR:  currentPiece = downBar;
                             break;
             case UP_BAR:    currentPiece = upBar;
+                            break;
 
         }
 
         // siin peaks ArrayCopy meetodit kasutama? kas ikka julgeb?
         for (int i = 0; i < currentPiece.length; i++) {
             for (int j = 0; j < currentPiece[i].length; j++) {
-                targetBoard[i + ROW_OFFSET][j + COL_OFFSET] = currentPiece[i][j];
+                if (targetBoard[i + ROW_OFFSET][j + COL_OFFSET] == EMPTY_SQUARE) {
+                    targetBoard[i + ROW_OFFSET][j + COL_OFFSET] = currentPiece[i][j];
+                } else {
+                    // see on vajalik ebaõnnestunud roteerimisest raporteerimiseks
+                    return false;
+                }
             }
         }
         // "telgitagusel" mängulaual on nüüd küll pala paigas
         fallingPieceExists = true;
+        return true;
     }
 
     private static void advanceAPiece(int[][] theBoard) {
@@ -348,7 +387,6 @@ public class Main extends Application {
                         break;
                     case UP_ARROW:
                         // ok nii et roteerimine
-                        // ...see meetod oligi liiga lühike
                         // -- vaatame mis on globalCurrentPieceType
                         // -- otsime nt praeguse klotsi kõige ülemisel real kõige vasakpoolsema ruudu
                         // -- uue pala joonistamise koordinaat (spawnAPiece(.., rida, tulp, ..) saadakse
@@ -356,7 +394,7 @@ public class Main extends Application {
                         // -- (milline samm mille jaoks on vajalik tuleb eraldi välja vaadata vist)
                         // -- siis 1.) testijoonistamine (kas on ruumi?) 2.) vana pala kustutamine 3.) reaalne
                         // -- uue joonistamine
-
+                        tryRotateCurrentPiece(theBoard);
                         commandQueue.remove(UP_ARROW);
                         break;
                 }
@@ -393,6 +431,7 @@ public class Main extends Application {
             }
         }
     }
+
     private static void moveAPieceRight(int[][] theBoard) {
         int nextSquareRight = FIXED_SQUARE;
         for (int i = 0; i < theBoard.length; i++) {
@@ -418,5 +457,153 @@ public class Main extends Application {
                 }
             }
         }
+    }
+
+    private static void tryRotateCurrentPiece(int[][] theBoard) {
+        boolean foundSomething = false;
+        boolean pieceFitSuccessful = false;
+        int x = 0, y = 0;
+        FIND_FIRST_OCCUPIED_SQUARE:
+        for(x = 0; x < theBoard.length; x++) {
+            for (y = 0; y < theBoard[x].length; y++) {
+                if (theBoard[x][y] == OCCUPIED_SQUARE) {
+                    foundSomething = true;
+                    break FIND_FIRST_OCCUPIED_SQUARE;
+                }
+
+            }
+        }
+
+        if (!foundSomething) {
+            System.out.println("mingil moel ei leidnud ühtegi pala");
+            return;
+        }
+
+        // siin võiks teha ajutise laua, kopeerida kogu praeguse sisu
+        int[][] temporaryTheBoard = new int[ROWS][COLUMNS];
+        for (int i = 0; i < theBoard.length; i++) {
+            for (int j = 0; j < theBoard[i].length; j++) {
+                temporaryTheBoard[i][j] = theBoard[i][j];
+            }
+        }
+        
+        if (globalCurrentPieceType != CUBE) {
+            wipePiece(temporaryTheBoard);
+        } else {
+            return;
+        }
+
+        switch (globalCurrentPieceType) {
+            case UP_L:
+                            pieceFitSuccessful = spawnAPiece(temporaryTheBoard, x, y, LEFT_L);
+                            break;
+            case DOWN_L:     
+                            pieceFitSuccessful = spawnAPiece(temporaryTheBoard, x, y, RIGHT_L);
+                            break;
+            case RIGHT_L:    
+                            pieceFitSuccessful = spawnAPiece(temporaryTheBoard, x, y, UP_L);
+                            break;
+            case LEFT_L:
+                            pieceFitSuccessful = spawnAPiece(temporaryTheBoard, x, y, DOWN_L);
+                            break;
+            case UP_TRANS_L:  
+                            pieceFitSuccessful = spawnAPiece(temporaryTheBoard, x, y, RIGHT_TRANS_L);
+                            break;
+            case DOWN_TRANS_L:  
+                            pieceFitSuccessful = spawnAPiece(temporaryTheBoard, x, y, LEFT_TRANS_L);
+                            break;
+            case LEFT_TRANS_L:  
+                            pieceFitSuccessful = spawnAPiece(temporaryTheBoard, x, y, UP_TRANS_L);
+                            break;
+            case RIGHT_TRANS_L:  
+                            pieceFitSuccessful = spawnAPiece(temporaryTheBoard, x, y, DOWN_TRANS_L);
+                            break;
+            case UP_T:
+                            pieceFitSuccessful = spawnAPiece(temporaryTheBoard, x, y, RIGHT_T);
+                            break;
+            case LEFT_T:     
+                            pieceFitSuccessful = spawnAPiece(temporaryTheBoard, x, y, UP_T);
+                            break;
+            case RIGHT_T:    
+                            pieceFitSuccessful = spawnAPiece(temporaryTheBoard, x, y, DOWN_T);
+                            break;
+            case DOWN_T:
+                            pieceFitSuccessful = spawnAPiece(temporaryTheBoard, x, y, LEFT_T);
+                            break;
+            case UP_DOWN_S:
+                            pieceFitSuccessful = spawnAPiece(temporaryTheBoard, x, y, LEFT_RIGHT_S);
+                            break;
+            case LEFT_RIGHT_S:
+                            pieceFitSuccessful = spawnAPiece(temporaryTheBoard, x, y, UP_DOWN_S);
+                            break;
+            case UP_DOWN_TRANS_S:
+                            pieceFitSuccessful = spawnAPiece(temporaryTheBoard, x, y, LEFT_RIGHT_TRANS_S);
+                            break;
+            case LEFT_RIGHT_TRANS_S:
+                            pieceFitSuccessful = spawnAPiece(temporaryTheBoard, x, y, UP_DOWN_TRANS_S);
+                            break;
+            case DOWN_BAR:
+                            pieceFitSuccessful = spawnAPiece(temporaryTheBoard, x, y, UP_BAR);
+                            break;
+            case UP_BAR:
+                            pieceFitSuccessful = spawnAPiece(temporaryTheBoard, x, y, DOWN_BAR);
+                            break;
+        }
+
+        if (pieceFitSuccessful) {
+            for (int i = 0; i < theBoard.length; i++) {
+                for (int j = 0; j < theBoard[i].length; j++) {
+                    theBoard[i][j] = temporaryTheBoard[i][j] ;
+                }
+            }
+        } else {
+            System.out.println("roteerimiseks pole ruumi");
+        }
+
+        return;
+    }
+
+    private static void wipePiece(int[][] theBoard) {
+        // ilmselt ajutine meetod pala mugavaks eemaldamiseks
+        for (int i = 0; i < theBoard.length; i++) {
+            for (int j = 0; j < theBoard[i].length; j++) {
+                if (theBoard[i][j] == OCCUPIED_SQUARE) {
+                    theBoard[i][j] = EMPTY_SQUARE;
+                }
+            }
+
+        }
+
+    }
+
+    private static int removeCompletedLines(int[][] theBoard) {
+        int points = 1;
+
+        for (int i = 0; i < theBoard.length; i++) { // rida-haaval
+            LOOP_ON_CURRENT_ROW:
+            for (int j = 0; j < theBoard[i].length; j++) {
+                if (theBoard[i][j] != FIXED_SQUARE) {
+                    break LOOP_ON_CURRENT_ROW;
+                } else if (theBoard[i].length + 1 == j) {
+                   // TODO juba siin on midagi valesti ridade lugemisega
+
+                    // jõudsime siia - täitunud rida on leitud
+                    System.out.println("rida " + i + " on valmis");
+                    for (int k = 0; k < theBoard[i].length; k++) {
+                        // theBoard[i][k] = COMPLETED_SQUARE;
+
+
+
+                        // TODO ok siit jätkame
+
+                    }
+                }
+            }
+        }
+
+        // jõudsime siia - read mis tuleb eemaldada on märgistatud
+
+        score += points;
+        return score;
     }
 }
