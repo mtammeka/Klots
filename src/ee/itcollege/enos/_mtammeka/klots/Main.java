@@ -109,7 +109,7 @@ public class Main extends Application {
                         group.setLayoutX((SCENE_WIDTH - text.getLayoutBounds().getWidth()) / 2);
 
                         // mäng läbi, kui uue klotsi tekitamisele jääb midagi ette
-                        gameOver = !spawnAPiece(board, 0, COLUMNS / 2, RANDOM);
+                        gameOver = !spawnAPiece(board, 0, COLUMNS / 2, CUBE);
                     } else {
                         advanceAPiece(board);
                         try {
@@ -578,6 +578,7 @@ public class Main extends Application {
 
     private static int removeCompletedLines(int[][] theBoard) {
         int points = 1;
+        LinkedHashSet<Integer> completedLines = new LinkedHashSet<>();
 
         for (int i = 0; i < theBoard.length; i++) { // rida-haaval
 
@@ -587,29 +588,48 @@ public class Main extends Application {
                 } else if ((theBoard[i].length - 1) == j) {
 
                     // jõudsime siia - täitunud rida on leitud
-                    System.out.println("rida " + i + " on valmis");
+                    completedLines.add(i);
                     for (int k = 0; k < theBoard[i].length; k++) {
                         theBoard[i][k] = COMPLETED_SQUARE;
-
                     }
                 }
             }
         }
 
+        System.out.println(completedLines);
         // jõudsime siia - read mis tuleb eemaldada on märgistatud
-        for (int j = 0; j < theBoard[0].length; j++) {
-            for (int i = theBoard.length - 1; i >= 0; i--) {
-                if (theBoard[i][j] == COMPLETED_SQUARE) {
 
-                    // muidugi ei muuda me neid tagasi
-                    // see on kohatäide, edaspidi:
-                    // -- tulp käiakse alt üles läbi
-                    // -- kui jõutakse COMPL.-ni eemaldatakse see, kogu "NON_OCC"! sisu trimmitakse järgi
-                    // -- ja hakatakse uuesti kuni tulp läbitud
-                    theBoard[i][j] = FIXED_SQUARE;
+        for (int removableLineNumber : completedLines) {
+            System.out.println("siia satub");
+            for (int j = 0; j < theBoard[0].length; j++) {
+                for (int i = 0; i < theBoard.length; i++) {
+
+
+                    // tulp ülevalt alla, 0 -> viimane rida enne valmis rida
+                    // indeksid 0 .. removeableLineNumber - 1
+                    int[] upperPart = new int[removableLineNumber];
+                    int lowerPartSize = theBoard.length - removableLineNumber - 1;
+                    if (lowerPartSize == 0) {
+                        //lowerPartSize = 1;
+                    }
+                    int[] lowerPart = new int[lowerPartSize];
+                    //if (theBoard[i][j] == OCCUPIED_SQUARE) {
+                    //    ;
+                    //}
+                    System.out.println("upperPart " + removableLineNumber + "  lowerPart " + lowerPartSize);
+                    if (theBoard[i][j] == COMPLETED_SQUARE) {
+
+                        // muidugi ei muuda me neid tagasi
+                        // see on kohatäide, edaspidi:
+                        // -- tulp käiakse alt üles läbi
+                        // -- kui jõutakse COMPL.-ni eemaldatakse see, kogu "NON_OCC"! sisu trimmitakse järgi
+                        // -- ja hakatakse uuesti kuni tulp läbitud
+                        // --- või ülevalt alla pigem?
+                        theBoard[i][j] = FIXED_SQUARE;
+
+                    }
                 }
             }
-
         }
 
 
