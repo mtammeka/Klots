@@ -597,34 +597,39 @@ public class Main extends Application {
         }
 
         System.out.println(completedLines);
-        // jõudsime siia - read mis tuleb eemaldada on märgistatud
+        if (completedLines.isEmpty()) {
+            return score;
+        }
+        // jõudsime siia - read mis tuleb eemaldada on märgistatud (ja olemas)
 
         for (int removableLineNumber : completedLines) {
             System.out.println("siia satub");
             for (int j = 0; j < theBoard[0].length; j++) {
+
+                int[] tempColumn = new int[theBoard.length];
+
+                for (int i = 0,  tempIterator = 0; i < theBoard.length; i++) {
+                    if (!completedLines.contains(i)) {
+                        tempColumn[tempIterator] = theBoard[i][j];
+                        tempIterator++;
+                    }
+                }
+
+                // on olemas koopia tulbast ülevalt -> alla; valmis ridade ruudud on vahelt ära,
+                // nende arvelt _lõpus_ _all_ nullid (?!)
+                // TODO kogu see osa
+
+                for (int i = 0; i < tempColumn.length; i++) {
+                    System.out.print(tempColumn[i] + " ");
+                }
+                System.out.println();
+
+
+                // ülejäänu meetodi lõpuni on täidis
                 for (int i = 0; i < theBoard.length; i++) {
 
-
-                    // tulp ülevalt alla, 0 -> viimane rida enne valmis rida
-                    // indeksid 0 .. removeableLineNumber - 1
-                    int[] upperPart = new int[removableLineNumber];
-                    int lowerPartSize = theBoard.length - removableLineNumber - 1;
-                    if (lowerPartSize == 0) {
-                        //lowerPartSize = 1;
-                    }
-                    int[] lowerPart = new int[lowerPartSize];
-                    //if (theBoard[i][j] == OCCUPIED_SQUARE) {
-                    //    ;
-                    //}
-                    System.out.println("upperPart " + removableLineNumber + "  lowerPart " + lowerPartSize);
                     if (theBoard[i][j] == COMPLETED_SQUARE) {
 
-                        // muidugi ei muuda me neid tagasi
-                        // see on kohatäide, edaspidi:
-                        // -- tulp käiakse alt üles läbi
-                        // -- kui jõutakse COMPL.-ni eemaldatakse see, kogu "NON_OCC"! sisu trimmitakse järgi
-                        // -- ja hakatakse uuesti kuni tulp läbitud
-                        // --- või ülevalt alla pigem?
                         theBoard[i][j] = FIXED_SQUARE;
 
                     }
