@@ -11,6 +11,7 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
+import java.util.Arrays;
 import java.util.ConcurrentModificationException;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -586,54 +587,45 @@ public class Main extends Application {
                 if (theBoard[i][j] != FIXED_SQUARE) {
                     break;
                 } else if ((theBoard[i].length - 1) == j) {
-
                     // jõudsime siia - täitunud rida on leitud
                     completedLines.add(i);
-                    for (int k = 0; k < theBoard[i].length; k++) {
-                        theBoard[i][k] = COMPLETED_SQUARE;
-                    }
                 }
             }
         }
 
         System.out.println(completedLines);
-        if (completedLines.isEmpty()) {
-            return score;
-        }
-        // jõudsime siia - read mis tuleb eemaldada on märgistatud (ja olemas)
 
-        for (int removableLineNumber : completedLines) {
-            System.out.println("siia satub");
+        // jõudsime siia - read mis tuleb eemaldada on märgistatud
+
+        //for (int removableLineNumber : completedLines) { // kui completedLines on tühi ei tehta midagi!
+        if (!completedLines.isEmpty()) {
             for (int j = 0; j < theBoard[0].length; j++) {
 
                 int[] tempColumn = new int[theBoard.length];
+                Arrays.fill(tempColumn, EMPTY_SQUARE); // see pole ka vajalik vist
 
-                for (int i = 0,  tempIterator = 0; i < theBoard.length; i++) {
+                /*for (int i = 0,  tempIterator = 0; i < theBoard.length; i++) {
                     if (!completedLines.contains(i)) {
+                        tempColumn[tempIterator] = theBoard[i][j];
+                        tempIterator++;
+                    }
+                }*/
+
+                for (int i = theBoard.length - 1,  tempIterator = 0; i >= 0; i--) {
+                    if (completedLines.contains(i)) {
+                        // mida siis täpsemalt...
+                    } else {
                         tempColumn[tempIterator] = theBoard[i][j];
                         tempIterator++;
                     }
                 }
 
-                // on olemas koopia tulbast ülevalt -> alla; valmis ridade ruudud on vahelt ära,
-                // nende arvelt _lõpus_ _all_ nullid (?!)
                 // TODO kogu see osa
 
                 for (int i = 0; i < tempColumn.length; i++) {
                     System.out.print(tempColumn[i] + " ");
                 }
                 System.out.println();
-
-
-                // ülejäänu meetodi lõpuni on täidis
-                for (int i = 0; i < theBoard.length; i++) {
-
-                    if (theBoard[i][j] == COMPLETED_SQUARE) {
-
-                        theBoard[i][j] = FIXED_SQUARE;
-
-                    }
-                }
             }
         }
 
