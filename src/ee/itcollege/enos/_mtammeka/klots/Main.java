@@ -3,6 +3,7 @@ import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.scene.Group;
+import javafx.scene.input.KeyCharacterCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
@@ -30,8 +31,8 @@ public class Main extends Application {
     private final static int EMPTY_SQUARE = 1, OCCUPIED_SQUARE = 2,
                             FIXED_SQUARE = 3, COMPLETED_SQUARE = 4;
     private final static int STEP = 20;
-    private final static int ROWS = 25;
-    private final static int COLUMNS = 14;
+    private final static int ROWS = 20;
+    private final static int COLUMNS = 10;
     private final static int SCENE_WIDTH = COLUMNS * STEP;
     private final static int SCENE_HEIGHT = (ROWS * STEP) + 100;
     private static int score = 0;
@@ -312,15 +313,19 @@ public class Main extends Application {
         }
 
         // siin peaks ArrayCopy meetodit kasutama? kas ikka julgeb?
-        for (int i = 0; i < currentPiece.length; i++) {
-            for (int j = 0; j < currentPiece[i].length; j++) {
-                if (targetBoard[i + ROW_OFFSET][j + COL_OFFSET] == EMPTY_SQUARE) {
-                    targetBoard[i + ROW_OFFSET][j + COL_OFFSET] = currentPiece[i][j];
-                } else {
-                    // see on vajalik ebaõnnestunud roteerimisest raporteerimiseks
-                    return false;
+        try {
+            for (int i = 0; i < currentPiece.length; i++) {
+                for (int j = 0; j < currentPiece[i].length; j++) {
+                    if (targetBoard[i + ROW_OFFSET][j + COL_OFFSET] == EMPTY_SQUARE) {
+                        targetBoard[i + ROW_OFFSET][j + COL_OFFSET] = currentPiece[i][j];
+                    } else {
+                        // see on vajalik ebaõnnestunud roteerimisest raporteerimiseks
+                        return false;
+                    }
                 }
             }
+        } catch (ArrayIndexOutOfBoundsException e) {
+            System.out.println("Haha spawnapiece sees on üks koht mis adresseerib olematuid väljasid");
         }
         // "telgitagusel" mängulaual on nüüd küll pala paigas
         fallingPieceExists = true;
@@ -594,48 +599,45 @@ public class Main extends Application {
             }
         }
 
-        // jõudsime siia - read mis tuleb eemaldada on märgistatud
-
-        //for (int removableLineNumber : completedLines) { // kui completedLines on tühi ei tehta midagi!
         if (!completedLines.isEmpty()) {
-            for (int j = 0; j < theBoard[0].length; j++) {
+            // jõudsime siia - read mis tuleb eemaldada on loetud, vähemalt üks on olemas
 
-                int[] tempColumn = new int[theBoard.length];
-                Arrays.fill(tempColumn, EMPTY_SQUARE); // miks crashib ilma selleta?!?
+            for (int i = 0; i < theBoard[0].length; i++) {
+                // siin tegeletakse ühe tulbaga korraga
+                int[] temporaryColumn = new int[theBoard.length];
 
-                for (int i = theBoard.length - 1,  tempIterator = i; tempIterator >= 0; i--) {
-                    if (completedLines.contains(i)) {
-                        break;
-                        // ainult algse massiivi aadressi itereeritakse
-                    } else if (i >= 0){
-                        if (theBoard[i][j] != OCCUPIED_SQUARE) {
-                            tempColumn[tempIterator] = theBoard[i][j];
-                        } else {
-                            tempColumn[tempIterator] = EMPTY_SQUARE;
-                        }
-                        tempIterator--;
-                    } else if (i < 0){
-                        tempColumn[tempIterator] = EMPTY_SQUARE;
-                        tempIterator--;
+                // koopia ilma "valmis" ridadeta, ilma mängupalata
+                for (int j = theBoard.length - 1, k = j; k >= 0; j--, k--) {
+                    if (completedLines.contains(j)) {
+                        k++;
+                    } else if (j < 0) {
+                        temporaryColumn[k] = EMPTY_SQUARE;
+                    } else if (theBoard[j][i] == OCCUPIED_SQUARE) {
+                        // mängupala praegu ei lisata, sest see nihkuks koos fikseeritud ruutudega
+                        temporaryColumn[k] = EMPTY_SQUARE;
+                    } else {
+                        temporaryColumn[k] = theBoard[j][i];
+                    }
+                    // mõlemat käiakse läbi "tagurpidi,"
+                    // nii et koopia jääb "õiget" pidi hahaha
+                }
+
+                // mängupala lisatakse algse positsiooniga
+                for (int j = theBoard.length - 1; j >= 0; j--) {
+                    if (theBoard[j][i] == OCCUPIED_SQUARE) {
+                        // siin loodetavasti kopeeritakse liikuv pala sama asukohaga
+                        // ... tegelikult SUHTELISELT kindlalt praegu ei olegi liikuvat pala aga...
+                        temporaryColumn[j] = OCCUPIED_SQUARE;
                     }
                 }
 
-                // liikuva mängupala asukoht jääb endiseks
-                for (int i = 0; i < theBoard.length; i++) {
-                    if (theBoard[i][j] == OCCUPIED_SQUARE) {
-                        tempColumn[i] = OCCUPIED_SQUARE;
-                    }
-
-                }
-
-                // tempColumn'ist on eemaldatavate ridade osad ära võetud vahelt
-                // "paneme tagasi"
-                for (int i = 0; i < theBoard.length; i++) {
-                    theBoard[i][j] = tempColumn[i];
+                // algne tulp asendatakse tulbaga, kust "valmis" read on eemaldatud, pala on endises asukohas
+                for (int j = theBoard.length - 1; j >= 0; j--) {
+                    theBoard[j][i] = temporaryColumn[j];
                 }
             }
-        }
 
+        }
 
         return completedLines.size();
     }
