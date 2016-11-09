@@ -17,7 +17,7 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 public class Main extends Application {
-    private final static int refreshRate = 12;
+    private final static int refreshRate = 6;
     private final static int UP_L = 1, DOWN_L = 2, RIGHT_L = 3, LEFT_L = 4,
                             UP_TRANS_L = 5, DOWN_TRANS_L = 6, LEFT_TRANS_L = 7, RIGHT_TRANS_L = 8,
                             CUBE = 9,
@@ -30,7 +30,7 @@ public class Main extends Application {
     private final static int EMPTY_SQUARE = 1, OCCUPIED_SQUARE = 2,
                             FIXED_SQUARE = 3, COMPLETED_SQUARE = 4;
     private final static int STEP = 20;
-    private final static int ROWS = 30;
+    private final static int ROWS = 25;
     private final static int COLUMNS = 14;
     private final static int SCENE_WIDTH = COLUMNS * STEP;
     private final static int SCENE_HEIGHT = (ROWS * STEP) + 100;
@@ -106,11 +106,12 @@ public class Main extends Application {
                         // mäng algas või klots just fikseeriti
                         // vaja kokku lugeda täiesti fikseeritud read ja need "vahelt ära tõmmata"
                         // anda punktid
-                        text.setText("Skoor: " + removeCompletedLines(board));
+                        score += removeCompletedLines(board);
+                        text.setText("Skoor: " + score);
                         group.setLayoutX((SCENE_WIDTH - text.getLayoutBounds().getWidth()) / 2);
 
                         // mäng läbi, kui uue klotsi tekitamisele jääb midagi ette
-                        gameOver = !spawnAPiece(board, 0, COLUMNS / 2, CUBE);
+                        gameOver = !spawnAPiece(board, 0, COLUMNS / 2, RANDOM);
                     } else {
                         advanceAPiece(board);
                         try {
@@ -578,7 +579,7 @@ public class Main extends Application {
     }
 
     private static int removeCompletedLines(int[][] theBoard) {
-        int points = 1;
+
         LinkedHashSet<Integer> completedLines = new LinkedHashSet<>();
 
         for (int i = 0; i < theBoard.length; i++) { // rida-haaval
@@ -593,8 +594,6 @@ public class Main extends Application {
             }
         }
 
-        System.out.println(completedLines);
-
         // jõudsime siia - read mis tuleb eemaldada on märgistatud
 
         //for (int removableLineNumber : completedLines) { // kui completedLines on tühi ei tehta midagi!
@@ -602,35 +601,42 @@ public class Main extends Application {
             for (int j = 0; j < theBoard[0].length; j++) {
 
                 int[] tempColumn = new int[theBoard.length];
-                Arrays.fill(tempColumn, EMPTY_SQUARE); // see pole ka vajalik vist
+                Arrays.fill(tempColumn, EMPTY_SQUARE); // miks crashib ilma selleta?!?
 
-                /*for (int i = 0,  tempIterator = 0; i < theBoard.length; i++) {
-                    if (!completedLines.contains(i)) {
-                        tempColumn[tempIterator] = theBoard[i][j];
-                        tempIterator++;
-                    }
-                }*/
-
-                for (int i = theBoard.length - 1,  tempIterator = 0; i >= 0; i--) {
+                for (int i = theBoard.length - 1,  tempIterator = i; tempIterator >= 0; i--) {
                     if (completedLines.contains(i)) {
-                        // mida siis täpsemalt...
-                    } else {
-                        tempColumn[tempIterator] = theBoard[i][j];
-                        tempIterator++;
+                        break;
+                        // ainult algse massiivi aadressi itereeritakse
+                    } else if (i >= 0){
+                        if (theBoard[i][j] != OCCUPIED_SQUARE) {
+                            tempColumn[tempIterator] = theBoard[i][j];
+                        } else {
+                            tempColumn[tempIterator] = EMPTY_SQUARE;
+                        }
+                        tempIterator--;
+                    } else if (i < 0){
+                        tempColumn[tempIterator] = EMPTY_SQUARE;
+                        tempIterator--;
                     }
                 }
 
-                // TODO kogu see osa
+                // liikuva mängupala asukoht jääb endiseks
+                for (int i = 0; i < theBoard.length; i++) {
+                    if (theBoard[i][j] == OCCUPIED_SQUARE) {
+                        tempColumn[i] = OCCUPIED_SQUARE;
+                    }
 
-                for (int i = 0; i < tempColumn.length; i++) {
-                    System.out.print(tempColumn[i] + " ");
                 }
-                System.out.println();
+
+                // tempColumn'ist on eemaldatavate ridade osad ära võetud vahelt
+                // "paneme tagasi"
+                for (int i = 0; i < theBoard.length; i++) {
+                    theBoard[i][j] = tempColumn[i];
+                }
             }
         }
 
 
-        score += points;
-        return score;
+        return completedLines.size();
     }
 }
