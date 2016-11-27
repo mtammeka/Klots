@@ -2,15 +2,21 @@ package ee.itcollege.enos._mtammeka.klots;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+import javafx.geometry.Insets;
 import javafx.scene.Group;
+import javafx.scene.control.Button;
 import javafx.scene.input.KeyCharacterCombination;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.layout.Pane;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.Scene;
+import javafx.scene.paint.Paint;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+
 
 import java.util.Arrays;
 import java.util.ConcurrentModificationException;
@@ -41,6 +47,7 @@ public class Main extends Application {
     private static boolean gameOver = false;
     private static Set<Byte> commandQueue = new LinkedHashSet<>();
     private final static byte DOWN_ARROW = 1, LEFT_ARROW = 2, RIGHT_ARROW = 3, UP_ARROW = 4;
+    private boolean pauseStatus = false;
 
     public static void main(String[] args) {
         launch(args);
@@ -48,20 +55,29 @@ public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
+
         Pane pane = new Pane();
         /*Scene constructor'i argumendid - parent root, x, y, fill color*/
-        Scene scene = new Scene(pane, SCENE_WIDTH, SCENE_HEIGHT, Color.CYAN);
+        Scene scene = new Scene(pane, SCENE_WIDTH, SCENE_HEIGHT);
         primaryStage.setScene(scene);
 
         // Tekstiala mängu nimega, skooriga jne
+        // kõik selle võiks ilust VBox jne asjadega teha tegelikult
+
+        Button pauseButton = new Button("PAUSE");
         Group group = new Group();
         Text text = new Text("TETRIS\nTETRIS");
+
         group.getChildren().addAll(text);
-        pane.getChildren().addAll(group);
+        pane.getChildren().addAll(group, pauseButton);
+        pauseButton.setLayoutX((SCENE_WIDTH / 2) - 25); // getWidth'iga ei saa nuppu keskele miskipärast?
+        pauseButton.setLayoutY(SCENE_HEIGHT - 90 );
         group.setLayoutX((SCENE_WIDTH - text.getLayoutBounds().getWidth()) / 2);
-        group.setLayoutY(ROWS * STEP + 50);
+        group.setLayoutY(SCENE_HEIGHT - 10);
 
         text.setText("TETRIS\nTETRIS");
+
+        pane.setBackground(new Background(new BackgroundFill(Color.CYAN, CornerRadii.EMPTY, Insets.EMPTY)));
 
         /*Mängulaua nähtavatele ruutedele vastavate objektide eksemplaride loomine*/
         Rectangle[][] boardFX = new Rectangle[ROWS][COLUMNS];
@@ -99,7 +115,7 @@ public class Main extends Application {
             @Override
             public void handle(long now) {
                 // Mängupala liiguks muidu liiga kiiresti
-                if (now - lastTimeStamp > (Math.pow(10, 9)) / refreshRate) { // now on nanosekundites
+                if ((now - lastTimeStamp > (Math.pow(10, 9)) / refreshRate) && !pauseStatus) { // now on nanosekundites
 
                     lastTimeStamp = now;
 
@@ -136,6 +152,8 @@ public class Main extends Application {
             }
         };
 
+        pauseButton.setOnAction(event -> pauseStatus = !pauseStatus);
+
         // Puhver sisendkäskude jaoks tundus alguses hea mõte aga ilmselt mingi hetk tuleb lihtsamaks muuta
         scene.addEventHandler(KeyEvent.KEY_PRESSED, key -> {
             switch (key.getCode()) {
@@ -151,6 +169,8 @@ public class Main extends Application {
                 case UP:
                     commandQueue.add(UP_ARROW);
                     break;
+                case SPACE:
+                    pauseStatus = !pauseStatus;
             }
         });
 
@@ -313,21 +333,37 @@ public class Main extends Application {
         }
 
         // siin peaks ArrayCopy meetodit kasutama? kas ikka julgeb?
+       int[][] tempBoard = new int[ROWS][COLUMNS];
         try {
+
+
+            for (int i = 0; i < targetBoard.length; i++) {
+                for (int j = 0; j < targetBoard[i].length; j++) {
+                    tempBoard[i][j] = targetBoard[i][j];
+                }
+
+            }
             for (int i = 0; i < currentPiece.length; i++) {
                 for (int j = 0; j < currentPiece[i].length; j++) {
-                    if (targetBoard[i + ROW_OFFSET][j + COL_OFFSET] == EMPTY_SQUARE) {
-                        targetBoard[i + ROW_OFFSET][j + COL_OFFSET] = currentPiece[i][j];
+                    if (tempBoard[i + ROW_OFFSET][j + COL_OFFSET] == EMPTY_SQUARE) {
+                        tempBoard[i + ROW_OFFSET][j + COL_OFFSET] = currentPiece[i][j];
                     } else {
-                        // see on vajalik ebaõnnestunud roteerimisest raporteerimiseks
+                        // palale jäi ette fikseeritud ruut
                         return false;
                     }
                 }
             }
         } catch (ArrayIndexOutOfBoundsException e) {
-            System.out.println("Haha spawnapiece sees on üks koht mis adresseerib olematuid väljasid");
+            /* pala ei mahtunud väljale ära*/
+            return false;
         }
         // "telgitagusel" mängulaual on nüüd küll pala paigas
+        for (int i = 0; i < targetBoard.length; i++) {
+            for (int j = 0; j < targetBoard[i].length; j++) {
+                targetBoard[i][j] = tempBoard[i][j];
+            }
+
+        }
         fallingPieceExists = true;
         return true;
     }
