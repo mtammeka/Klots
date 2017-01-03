@@ -502,7 +502,7 @@ public class TetrisBoard {
         }
     }
 
-    private int removeCompletedLines(int[][] theBoard) {
+    private static int removeCompletedLines(int[][] theBoard) {
 
         LinkedHashSet<Integer> completedLines = new LinkedHashSet<>();
 

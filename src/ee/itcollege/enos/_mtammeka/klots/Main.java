@@ -7,10 +7,7 @@ import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.layout.Background;
-import javafx.scene.layout.BackgroundFill;
-import javafx.scene.layout.CornerRadii;
-import javafx.scene.layout.Pane;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
@@ -35,8 +32,6 @@ public class Main extends Application {
     private final static byte DOWN_ARROW = 1, LEFT_ARROW = 2, RIGHT_ARROW = 3, UP_ARROW = 4;
     private boolean pauseStatus = false;
 
-    int board[][] = new int[ROWS][COLUMNS];
-
     public static void main(String[] args) {
         launch(args);
     }
@@ -53,13 +48,18 @@ public class Main extends Application {
         // kõik selle võiks ilust VBox jne asjadega teha tegelikult
 
         Button pauseButton = new Button("PAUSE");
+        Button resetButton = new Button("RESET");
         Group group = new Group();
+        HBox buttonBox = new HBox();
         Text text = new Text("TETRIS\nTETRIS");
 
+        buttonBox.getChildren().add(pauseButton);
+        buttonBox.getChildren().add(resetButton);
+
         group.getChildren().addAll(text);
-        pane.getChildren().addAll(group, pauseButton);
-        pauseButton.setLayoutX((SCENE_WIDTH / 2) - 25); // getWidth'iga ei saa nuppu keskele miskipärast?
-        pauseButton.setLayoutY(SCENE_HEIGHT - 90 );
+        pane.getChildren().addAll(group, buttonBox);
+        buttonBox.setLayoutX((SCENE_WIDTH / 2) - 25); // getWidth'iga ei saa nuppu keskele miskipärast?
+        buttonBox.setLayoutY(SCENE_HEIGHT - 90 );
         group.setLayoutX((SCENE_WIDTH - text.getLayoutBounds().getWidth()) / 2);
         group.setLayoutY(SCENE_HEIGHT - 10);
 
@@ -95,7 +95,7 @@ public class Main extends Application {
 
         myTetrisBoard = new TetrisBoard(ROWS, COLUMNS);
 
-        board = myTetrisBoard.getBoard();
+        /*board = myTetrisBoard.getBoard();*/
 
 
         // Anonüümne eksemplar AnimationTimer objektist - teeb võimalikuks, et ekraanil toimub midagi ajas
@@ -108,8 +108,7 @@ public class Main extends Application {
                     lastTimeStamp = now;
 
                     myTetrisBoard.advanceTheGame(commandQueue);
-                    board = myTetrisBoard.getBoard();
-                    carryBoardToBoardFX(board, boardFX, ROWS, COLUMNS);
+                    carryBoardToBoardFX(myTetrisBoard.getBoard(), boardFX, ROWS, COLUMNS);
                     text.setText("Skoor: " + myTetrisBoard.getScore());
 
                     if (myTetrisBoard.isGameOver()) {
@@ -120,6 +119,8 @@ public class Main extends Application {
         };
 
         pauseButton.setOnAction(event -> pauseStatus = !pauseStatus);
+
+        resetButton.setOnAction(event -> myTetrisBoard = new TetrisBoard(ROWS, COLUMNS));
 
         // Puhver sisendkäskude jaoks tundus alguses hea mõte aga ilmselt mingi hetk tuleb lihtsamaks muuta
         scene.addEventHandler(KeyEvent.KEY_PRESSED, key -> {
