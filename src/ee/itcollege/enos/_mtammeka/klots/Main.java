@@ -109,6 +109,12 @@ public class Main extends Application {
                 board[i][j] = EMPTY_SQUARE;
             }
         }
+        /*
+        * Siia tuleks siis OO-s:
+        * myTetrisBoard = new TetrisBoard(ROWS, COLUMNS);
+        *
+         *  byte[][] board = myTetrisBoard.getBoard();
+        * */
 
         // Anonüümne eksemplar AnimationTimer objektist - teeb võimalikuks, et ekraanil toimub midagi ajas
         AnimationTimer timer = new AnimationTimer() {
