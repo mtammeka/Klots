@@ -3,7 +3,7 @@ package ee.itcollege.enos._mtammeka.klots;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.geometry.Insets;
-import javafx.scene.Group;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.input.KeyEvent;
@@ -20,16 +20,11 @@ public class Main extends Application {
 
     private TetrisBoard myTetrisBoard;
     private final static int refreshRate = 6;
-    private final static int EMPTY_SQUARE = 1, OCCUPIED_SQUARE = 2,
-                            FIXED_SQUARE = 3;
     private final static int STEP = 20;
-    private final static int ROWS = 20;
+    private final static int ROWS = 25;
     private final static int COLUMNS = 10;
-    private final static int SCENE_WIDTH = COLUMNS * STEP;
-    private final static int SCENE_HEIGHT = (ROWS * STEP) + 100;
     private static long lastTimeStamp = 0;
     private static Set<Byte> commandQueue = new LinkedHashSet<>();
-    private final static byte DOWN_ARROW = 1, LEFT_ARROW = 2, RIGHT_ARROW = 3, UP_ARROW = 4;
     private boolean pauseStatus = false;
 
     public static void main(String[] args) {
@@ -39,35 +34,29 @@ public class Main extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
 
-        Pane pane = new Pane();
-        /*Scene constructor'i argumendid - parent root, x, y, fill color*/
-        Scene scene = new Scene(pane, SCENE_WIDTH, SCENE_HEIGHT);
+        BorderPane root = new BorderPane();
+        root.setPadding(new Insets(10, 10, 10, 10));
+        Scene scene = new Scene(root);
         primaryStage.setScene(scene);
+        primaryStage.setTitle("Klots");
 
-        // Tekstiala mängu nimega, skooriga jne
-        // kõik selle võiks ilust VBox jne asjadega teha tegelikult
+        Pane pane = new Pane();
+        root.setCenter(pane);
 
         Button pauseButton = new Button("PAUSE");
         Button resetButton = new Button("RESET");
-        Group group = new Group();
+        Text text = new Text("Skoor: ");
         HBox buttonBox = new HBox();
-        Text text = new Text("TETRIS\nTETRIS");
+        VBox stuffBox = new VBox();
+        buttonBox.getChildren().addAll(pauseButton, resetButton);
+        buttonBox.setAlignment(Pos.CENTER);
+        stuffBox.getChildren().addAll(buttonBox, text);
+        stuffBox.setAlignment(Pos.CENTER);
 
-        buttonBox.getChildren().add(pauseButton);
-        buttonBox.getChildren().add(resetButton);
+        root.setBottom(stuffBox);
+        root.setBackground(new Background(new BackgroundFill(Color.CYAN, CornerRadii.EMPTY, Insets.EMPTY)));
 
-        group.getChildren().addAll(text);
-        pane.getChildren().addAll(group, buttonBox);
-        buttonBox.setLayoutX((SCENE_WIDTH / 2) - 25); // getWidth'iga ei saa nuppu keskele miskipärast?
-        buttonBox.setLayoutY(SCENE_HEIGHT - 90 );
-        group.setLayoutX((SCENE_WIDTH - text.getLayoutBounds().getWidth()) / 2);
-        group.setLayoutY(SCENE_HEIGHT - 10);
-
-        text.setText("TETRIS\nTETRIS");
-
-        pane.setBackground(new Background(new BackgroundFill(Color.CYAN, CornerRadii.EMPTY, Insets.EMPTY)));
-
-        /*Mängulaua nähtavatele ruutedele vastavate objektide eksemplaride loomine*/
+        /*Mängulaua nähtavate ruutude loomine*/
         Rectangle[][] boardFX = new Rectangle[ROWS][COLUMNS];
 
         for (int i = 0; i < ROWS; i++) {
@@ -84,19 +73,13 @@ public class Main extends Application {
             }
         }
 
-        System.out.printf("COLUMNS: %d, ROWS: %d.\n", COLUMNS, ROWS);
         // Orienteerumise näited:
         //boardFX[14][0].setFill(Color.BLUE); // rida 13 tulp 1 - siniseks
         //boardFX[ROWS - 1][COLUMNS - 1].setFill(Color.YELLOW); // kõige alumine-parempoolne ruut kollaseks
 
-
         /* Luuakse "telgitagune" mängulaud, mängulaua ruutudel on kolm võimalikku seisundit:
          * EMPTY, OCCUPIED, FIXED */
-
         myTetrisBoard = new TetrisBoard(ROWS, COLUMNS);
-
-        /*board = myTetrisBoard.getBoard();*/
-
 
         // Anonüümne eksemplar AnimationTimer objektist - teeb võimalikuks, et ekraanil toimub midagi ajas
         AnimationTimer timer = new AnimationTimer() {
@@ -126,16 +109,16 @@ public class Main extends Application {
         scene.addEventHandler(KeyEvent.KEY_PRESSED, key -> {
             switch (key.getCode()) {
                 case LEFT:
-                    commandQueue.add(LEFT_ARROW);
+                    commandQueue.add(TetrisBoard.LEFT_ARROW);
                     break;
                 case RIGHT:
-                    commandQueue.add(RIGHT_ARROW);
+                    commandQueue.add(TetrisBoard.RIGHT_ARROW);
                     break;
                 case DOWN:
-                    commandQueue.add(DOWN_ARROW);
+                    commandQueue.add(TetrisBoard.DOWN_ARROW);
                     break;
                 case UP:
-                    commandQueue.add(UP_ARROW);
+                    commandQueue.add(TetrisBoard.UP_ARROW);
                     break;
                 case SPACE:
                     pauseStatus = !pauseStatus;
@@ -148,18 +131,19 @@ public class Main extends Application {
     }
 
     private static void carryBoardToBoardFX(int[][] inputBoard, Rectangle[][] outputBoardFX, int ROW, int COL) {
+        /* meetod mängulaua nähtavaks muutmiseks */
         for (int i = 0; i < ROW; i++)
             for (int j = 0; j < COL; j++)
                 switch (inputBoard[i][j]) {
-                    case OCCUPIED_SQUARE:
+                    case TetrisBoard.OCCUPIED_SQUARE:
                         if (outputBoardFX[i][j].getFill() != Color.GREEN)
                             outputBoardFX[i][j].setFill(Color.GREEN);
                         break;
-                    case FIXED_SQUARE:
+                    case TetrisBoard.FIXED_SQUARE:
                         if (outputBoardFX[i][j].getFill() != Color.VIOLET)
                             outputBoardFX[i][j].setFill(Color.VIOLET);
                         break;
-                    case EMPTY_SQUARE:
+                    case TetrisBoard.EMPTY_SQUARE:
                         if (outputBoardFX[i][j].getFill() != Color.DARKGRAY)
                             outputBoardFX[i][j].setFill(Color.DARKGRAY);
                         break;

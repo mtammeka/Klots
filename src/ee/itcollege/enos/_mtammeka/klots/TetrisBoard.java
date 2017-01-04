@@ -13,7 +13,12 @@ public class TetrisBoard {
     private boolean gameOver = false;
     private int score = 0;
     private int rows, columns;
-    private final static int EMPTY_SQUARE = 1, OCCUPIED_SQUARE = 2, FIXED_SQUARE = 3;
+
+    // kahemõõtmelises massiivis on ruutudel kolm võimalikku seisundit - vaba; täidetud hetkel liikuva mängupala osa poolt;
+    // või täidetud põhjani jõudnud mängupala osa poolt, mida enam liigutada ei saa
+    public final static int EMPTY_SQUARE = 1, OCCUPIED_SQUARE = 2, FIXED_SQUARE = 3;
+
+    // erinevat tüüpi mängupalad, mis olemas on
     private final static int   UP_L = 1, DOWN_L = 2, RIGHT_L = 3, LEFT_L = 4,
                                 UP_TRANS_L = 5, DOWN_TRANS_L = 6, LEFT_TRANS_L = 7, RIGHT_TRANS_L = 8,
                                 CUBE = 9,
@@ -22,8 +27,11 @@ public class TetrisBoard {
                                 UP_DOWN_TRANS_S = 16, LEFT_RIGHT_TRANS_S = 17,
                                 DOWN_BAR = 18, UP_BAR = 19,
                                 RANDOM = 20;
+
     private int globalCurrentPieceType;
-    private final static byte DOWN_ARROW = 1, LEFT_ARROW = 2, RIGHT_ARROW = 3, UP_ARROW = 4;
+
+    // erinevad võimalikud sisendkäsud (UP_ARROW on roteerimine)
+    public final static byte DOWN_ARROW = 1, LEFT_ARROW = 2, RIGHT_ARROW = 3, UP_ARROW = 4;
     private int[][] board;
 
     public TetrisBoard(int rows, int columns) {
@@ -42,7 +50,8 @@ public class TetrisBoard {
     public int getScore() {
         return score;
     }
-    
+
+    // andes käsk mängus järgmine "samm" teha edastatakse ka kasutajalt vahepeal tulnud käsud
     public void advanceTheGame(Set<Byte> commandQueue) {
         if (fallingPieceExists) {
 
@@ -55,6 +64,7 @@ public class TetrisBoard {
 
             advanceAPiece(board);
 
+            // täis saanud ridu eemaldav meetod tagastab ka skoori vastavalt eemaldatud ridade arvule
             score += removeCompletedLines(board);
         } else {
             gameOver = !spawnAPiece(board, 0, columns / 2, RANDOM);
@@ -85,6 +95,7 @@ public class TetrisBoard {
     }
 
     private boolean spawnAPiece(int[][] targetBoard, final int ROW_OFFSET, final int COL_OFFSET, int pieceType) {
+        // tetrises võimalikud erinevad mängupalad on siin defineeritud massiividena
         int[][] upL =       { {OCCUPIED_SQUARE, EMPTY_SQUARE},                      // XO
                             {OCCUPIED_SQUARE, EMPTY_SQUARE},                        // XO
                             {OCCUPIED_SQUARE, OCCUPIED_SQUARE} };                   // XX
@@ -156,24 +167,11 @@ public class TetrisBoard {
 
         int[][] currentPiece = cube; // muutujale tuleb mingi algväärtus anda
 
-        // edaspidi loodaks sama meetodit kasutada ka "roteerimisel," e langeva pala väljavahetamisel
-        // selle jaoks on vaja eelnevast palast vastav koht puhtaks teha. Siin on veel tegemist
-        // ... praegu tegime kustutamiseks eraldi meetodi, siit kommenteerime välja
-        /*for (int i = 0; i < 4; i++) {
-            for (int j = 0; j < 4; j++) {
-                if (targetBoard[i + ROW_OFFSET][j + COL_OFFSET] != FIXED_SQUARE) {
-                    targetBoard[i + ROW_OFFSET][j + COL_OFFSET] = EMPTY_SQUARE;
-                } else {
-                    gameOver = true;
-                }
-            }
-        }*/
-
         if (pieceType == RANDOM) {
             pieceType = ((int) (Math.random() * 19) + 1); //nr 20 ongi "juhuslik", 1..19 on konkreetsed palad
         }
 
-        globalCurrentPieceType = pieceType; // ei tea kas seda on vaja
+        globalCurrentPieceType = pieceType;
 
         // jälle pikk kood - kui kunagi aega, sooviks asja elegantselt lahendada... HashMap-iga?
         switch (pieceType) {
@@ -245,7 +243,7 @@ public class TetrisBoard {
              */
             return false;
         }
-        // "telgitagusel" mängulaual on nüüd küll pala paigas
+
         for (int i = 0; i < targetBoard.length; i++) {
             for (int j = 0; j < targetBoard[i].length; j++) {
                 targetBoard[i][j] = tempBoard[i][j];
@@ -256,7 +254,7 @@ public class TetrisBoard {
         return true;
     }
     private void advanceAPiece(int[][] theBoard) {
-        int nextSquareDown = FIXED_SQUARE; // initialise to "the edge of the board"
+        int nextSquareDown = FIXED_SQUARE; // laua servast alustades on vaja mõelda, nagu üle serva oleks fikseeritud ruudud
 
         for (int j = 0; j < theBoard[0].length; j++) { // alustame esimese tulba peal
             for (int i = theBoard.length - 1; i >= 0; i--) { // alustame tulba alumisest ruudust, e viimasel real
@@ -387,109 +385,6 @@ public class TetrisBoard {
         }
     }
 
-    private void tryRotateCurrentPiece(int[][] theBoard) {
-        boolean foundSomething = false;
-        boolean pieceFitSuccessful = false;
-        int x = 0, y = 0;
-        FIND_FIRST_OCCUPIED_SQUARE:
-        for(x = 0; x < theBoard.length; x++) {
-            for (y = 0; y < theBoard[x].length; y++) {
-                if (theBoard[x][y] == OCCUPIED_SQUARE) {
-                    foundSomething = true;
-                    break FIND_FIRST_OCCUPIED_SQUARE;
-                }
-
-            }
-        }
-
-        if (!foundSomething) {
-            System.out.println("mingil moel ei leidnud ühtegi pala");
-            return;
-        }
-
-        // siin võiks teha ajutise laua, kopeerida kogu praeguse sisu
-        int[][] temporaryTheBoard = new int[rows][columns];
-        for (int i = 0; i < theBoard.length; i++) {
-            for (int j = 0; j < theBoard[i].length; j++) {
-                temporaryTheBoard[i][j] = theBoard[i][j];
-            }
-        }
-
-        if (globalCurrentPieceType != CUBE) {
-            wipePiece(temporaryTheBoard);
-        } else {
-            return;
-        }
-
-        switch (globalCurrentPieceType) {
-            case UP_L:
-                pieceFitSuccessful = spawnAPiece(temporaryTheBoard, x, y, LEFT_L);
-                break;
-            case DOWN_L:
-                pieceFitSuccessful = spawnAPiece(temporaryTheBoard, x, y, RIGHT_L);
-                break;
-            case RIGHT_L:
-                pieceFitSuccessful = spawnAPiece(temporaryTheBoard, x, y, UP_L);
-                break;
-            case LEFT_L:
-                pieceFitSuccessful = spawnAPiece(temporaryTheBoard, x, y, DOWN_L);
-                break;
-            case UP_TRANS_L:
-                pieceFitSuccessful = spawnAPiece(temporaryTheBoard, x, y, RIGHT_TRANS_L);
-                break;
-            case DOWN_TRANS_L:
-                pieceFitSuccessful = spawnAPiece(temporaryTheBoard, x, y, LEFT_TRANS_L);
-                break;
-            case LEFT_TRANS_L:
-                pieceFitSuccessful = spawnAPiece(temporaryTheBoard, x, y, UP_TRANS_L);
-                break;
-            case RIGHT_TRANS_L:
-                pieceFitSuccessful = spawnAPiece(temporaryTheBoard, x, y, DOWN_TRANS_L);
-                break;
-            case UP_T:
-                pieceFitSuccessful = spawnAPiece(temporaryTheBoard, x, y, RIGHT_T);
-                break;
-            case LEFT_T:
-                pieceFitSuccessful = spawnAPiece(temporaryTheBoard, x, y, UP_T);
-                break;
-            case RIGHT_T:
-                pieceFitSuccessful = spawnAPiece(temporaryTheBoard, x, y, DOWN_T);
-                break;
-            case DOWN_T:
-                pieceFitSuccessful = spawnAPiece(temporaryTheBoard, x, y, LEFT_T);
-                break;
-            case UP_DOWN_S:
-                pieceFitSuccessful = spawnAPiece(temporaryTheBoard, x, y, LEFT_RIGHT_S);
-                break;
-            case LEFT_RIGHT_S:
-                pieceFitSuccessful = spawnAPiece(temporaryTheBoard, x, y, UP_DOWN_S);
-                break;
-            case UP_DOWN_TRANS_S:
-                pieceFitSuccessful = spawnAPiece(temporaryTheBoard, x, y, LEFT_RIGHT_TRANS_S);
-                break;
-            case LEFT_RIGHT_TRANS_S:
-                pieceFitSuccessful = spawnAPiece(temporaryTheBoard, x, y, UP_DOWN_TRANS_S);
-                break;
-            case DOWN_BAR:
-                pieceFitSuccessful = spawnAPiece(temporaryTheBoard, x, y, UP_BAR);
-                break;
-            case UP_BAR:
-                pieceFitSuccessful = spawnAPiece(temporaryTheBoard, x, y, DOWN_BAR);
-                break;
-        }
-
-        if (pieceFitSuccessful) {
-            for (int i = 0; i < theBoard.length; i++) {
-                for (int j = 0; j < theBoard[i].length; j++) {
-                    theBoard[i][j] = temporaryTheBoard[i][j] ;
-                }
-            }
-        } else {
-            System.out.println("roteerimiseks pole ruumi");
-        }
-
-    }
-
     private static void wipePiece(int[][] theBoard) {
         // ilmselt ajutine meetod pala mugavaks eemaldamiseks
         for (int i = 0; i < theBoard.length; i++) {
@@ -559,6 +454,119 @@ public class TetrisBoard {
         }
 
         return completedLines.size();
+    }
+
+    private void tryRotateCurrentPiece(int[][] theBoard) {
+        boolean foundSomething = false;
+        boolean pieceFitSuccessful = false;
+        int x = 0, y = 0;
+        FIND_FIRST_OCCUPIED_SQUARE:
+        for(x = 0; x < theBoard.length; x++) {
+            for (y = 0; y < theBoard[x].length; y++) {
+                if (theBoard[x][y] == OCCUPIED_SQUARE) {
+                    foundSomething = true;
+                    break FIND_FIRST_OCCUPIED_SQUARE;
+                }
+
+            }
+        }
+
+        if (!foundSomething) {
+            System.out.println("mingil moel ei leidnud ühtegi pala");
+            return;
+        }
+
+        // siin võiks teha ajutise laua, kopeerida kogu praeguse sisu
+        int[][] temporaryTheBoard = new int[rows][columns];
+        for (int i = 0; i < theBoard.length; i++) {
+            for (int j = 0; j < theBoard[i].length; j++) {
+                temporaryTheBoard[i][j] = theBoard[i][j];
+            }
+        }
+
+        if (globalCurrentPieceType != CUBE) {
+            wipePiece(temporaryTheBoard);
+        } else {
+            return;
+        }
+
+        /* roteeritakse asju ainult kellaosuti suunas
+         * järgnev switch lause määrab, mille vastu praegune pala välja vahetada kui ta "paremale" pöörata
+          * mõne case'i juures on korrigeeritud x-koordinaati kuna muidu ujuvad palad liialt paremale ära ka*/
+        switch (globalCurrentPieceType) {
+            case UP_L:
+                pieceFitSuccessful = spawnAPiece(temporaryTheBoard, x, y, LEFT_L);
+                break;
+            case DOWN_L:
+                pieceFitSuccessful = spawnAPiece(temporaryTheBoard, x, y, RIGHT_L);
+                break;
+            case RIGHT_L:
+                pieceFitSuccessful = spawnAPiece(temporaryTheBoard, x, y, UP_L);
+                break;
+            case LEFT_L:
+                pieceFitSuccessful = spawnAPiece(temporaryTheBoard, x, y, DOWN_L);
+                break;
+            case UP_TRANS_L:
+                pieceFitSuccessful = spawnAPiece(temporaryTheBoard, x, y, RIGHT_TRANS_L);
+                break;
+            case DOWN_TRANS_L:
+                pieceFitSuccessful = spawnAPiece(temporaryTheBoard, x, y, LEFT_TRANS_L);
+                break;
+            case LEFT_TRANS_L:
+                pieceFitSuccessful = spawnAPiece(temporaryTheBoard, x, y, UP_TRANS_L);
+                break;
+            case RIGHT_TRANS_L:
+                pieceFitSuccessful = spawnAPiece(temporaryTheBoard, x, y, DOWN_TRANS_L);
+                break;
+            case UP_T:
+                x--;
+                pieceFitSuccessful = spawnAPiece(temporaryTheBoard, x, y, RIGHT_T);
+                break;
+            case LEFT_T:
+                x--;
+                pieceFitSuccessful = spawnAPiece(temporaryTheBoard, x, y, UP_T);
+                break;
+            case RIGHT_T:
+                x--;
+                pieceFitSuccessful = spawnAPiece(temporaryTheBoard, x, y, DOWN_T);
+                break;
+            case DOWN_T:
+                x--;
+                pieceFitSuccessful = spawnAPiece(temporaryTheBoard, x, y, LEFT_T);
+                break;
+            case UP_DOWN_S:
+                pieceFitSuccessful = spawnAPiece(temporaryTheBoard, x, y, LEFT_RIGHT_S);
+                break;
+            case LEFT_RIGHT_S:
+                x--;
+                pieceFitSuccessful = spawnAPiece(temporaryTheBoard, x, y, UP_DOWN_S);
+                break;
+            case UP_DOWN_TRANS_S:
+                x--;
+                pieceFitSuccessful = spawnAPiece(temporaryTheBoard, x, y, LEFT_RIGHT_TRANS_S);
+                break;
+            case LEFT_RIGHT_TRANS_S:
+                x--;
+                pieceFitSuccessful = spawnAPiece(temporaryTheBoard, x, y, UP_DOWN_TRANS_S);
+                break;
+            case DOWN_BAR:
+                pieceFitSuccessful = spawnAPiece(temporaryTheBoard, x, y, UP_BAR);
+                break;
+            case UP_BAR:
+                pieceFitSuccessful = spawnAPiece(temporaryTheBoard, x, y, DOWN_BAR);
+                break;
+        }
+
+        if (pieceFitSuccessful) {
+            for (int i = 0; i < theBoard.length; i++) {
+                for (int j = 0; j < theBoard[i].length; j++) {
+                    theBoard[i][j] = temporaryTheBoard[i][j] ;
+                }
+            }
+        } else {
+            System.out.println("roteerimiseks pole ruumi");
+        }
+
     }
 
 }
