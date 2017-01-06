@@ -1,8 +1,8 @@
 # Klots
 
 "Klots" on Tetrise kloon. (Sest tetrises on ju nagu klotsid, eks?! Tegelikult sai suvaline nimi alguses pandud ja nii ta jäi.)
-Programmi käivitades hakkab mäng kohe pihta, nupule PAUSE hiirea klikkides on võimalik mängu katkestada. Uuesti PAUSE vajutades
-mäng jätkub. RESET vajutades algab mäng otsast peale.
+Programmi käivitades küsitakse, kas soovid mängu alustada või programmi sulgeda. Mängimine käib nooleklahvidega klassikalise Tetrise stiilis.
+Peamise akna alaosas on näidatud punktisumma ja olemas nupud mängus pausi tegemiseks või uue mängu alustamiseks.
 
 
 ### Litsents
