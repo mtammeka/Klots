@@ -23,7 +23,7 @@ import java.util.Set;
 public class Main extends Application {
 
     private TetrisBoard myTetrisBoard;
-    private final static int refreshRate = 15;
+    private final static int refreshRate = 6;
     private final static int STEP = 20;
     private final static int ROWS = 25;
     private final static int COLUMNS = 10;
@@ -47,7 +47,7 @@ public class Main extends Application {
         Pane pane = new Pane();
         root.setCenter(pane);
 
-        Button pauseButton = new Button("PAUSE");
+        Button pauseButton = new Button("Paus/Jätka");
         Button resetButton = new Button("Uus mäng");
         Text text = new Text("Skoor: ");
         HBox buttonBox = new HBox();
@@ -116,6 +116,7 @@ public class Main extends Application {
 
                     if (myTetrisBoard.isGameOver()) {
                         text.setText("Mäng läbi! Skoor: " + myTetrisBoard.getScore());
+                        pauseStatus = true;
                     }
 
                 }
