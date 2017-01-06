@@ -459,7 +459,7 @@ public class TetrisBoard {
     private void tryRotateCurrentPiece(int[][] theBoard) {
         boolean foundSomething = false;
         boolean pieceFitSuccessful = false;
-        int x = 0, y = 0;
+        int x, y = 0;
         FIND_FIRST_OCCUPIED_SQUARE:
         for(x = 0; x < theBoard.length; x++) {
             for (y = 0; y < theBoard[x].length; y++) {

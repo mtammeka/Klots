@@ -2,10 +2,13 @@ package ee.itcollege.enos._mtammeka.klots;
 
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
@@ -14,12 +17,13 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
 import java.util.LinkedHashSet;
+import java.util.Optional;
 import java.util.Set;
 
 public class Main extends Application {
 
     private TetrisBoard myTetrisBoard;
-    private final static int refreshRate = 6;
+    private final static int refreshRate = 15;
     private final static int STEP = 20;
     private final static int ROWS = 25;
     private final static int COLUMNS = 10;
@@ -44,7 +48,7 @@ public class Main extends Application {
         root.setCenter(pane);
 
         Button pauseButton = new Button("PAUSE");
-        Button resetButton = new Button("RESET");
+        Button resetButton = new Button("Uus mäng");
         Text text = new Text("Skoor: ");
         HBox buttonBox = new HBox();
         VBox stuffBox = new VBox();
@@ -77,33 +81,55 @@ public class Main extends Application {
         //boardFX[14][0].setFill(Color.BLUE); // rida 13 tulp 1 - siniseks
         //boardFX[ROWS - 1][COLUMNS - 1].setFill(Color.YELLOW); // kõige alumine-parempoolne ruut kollaseks
 
-        /* Luuakse "telgitagune" mängulaud, mängulaua ruutudel on kolm võimalikku seisundit:
-         * EMPTY, OCCUPIED, FIXED */
-        myTetrisBoard = new TetrisBoard(ROWS, COLUMNS);
+        Alert programStarted = new Alert(Alert.AlertType.CONFIRMATION);
+        programStarted.setTitle("Tere!");
+        programStarted.setHeaderText("Tetrise kloon \"Klots\"");
+        programStarted.setContentText("Mängimiseks kasuta nooleklahve.");
+        ButtonType startGame = new ButtonType("Alusta mängu");
+        ButtonType exitProgram = new ButtonType("Välju programmist");
+        programStarted.getButtonTypes().setAll(startGame, exitProgram);
+        Optional<ButtonType> result = programStarted.showAndWait();
+        if (result.get() == startGame) {
+            /* Luuakse "telgitagune" mängulaud, mängulaua ruutudel on kolm võimalikku seisundit:
+             * EMPTY, OCCUPIED, FIXED */
+            myTetrisBoard = new TetrisBoard(ROWS, COLUMNS);
+        } else if (result.get() == exitProgram) {
+            Platform.exit();
+            System.exit(0);
+        }
+
 
         // Anonüümne eksemplar AnimationTimer objektist - teeb võimalikuks, et ekraanil toimub midagi ajas
         AnimationTimer timer = new AnimationTimer() {
             @Override
             public void handle(long now) {
                 // Mängupala liiguks muidu liiga kiiresti
-                if ((now - lastTimeStamp > (Math.pow(10, 9)) / refreshRate) && !pauseStatus) { // now on nanosekundites
+                if ((now - lastTimeStamp > (Math.pow(10, 9)) / refreshRate)) { // now on nanosekundites
 
                     lastTimeStamp = now;
 
-                    myTetrisBoard.advanceTheGame(commandQueue);
-                    carryBoardToBoardFX(myTetrisBoard.getBoard(), boardFX, ROWS, COLUMNS);
-                    text.setText("Skoor: " + myTetrisBoard.getScore());
+                    if (!pauseStatus) {
+                        myTetrisBoard.advanceTheGame(commandQueue);
+                        carryBoardToBoardFX(myTetrisBoard.getBoard(), boardFX, ROWS, COLUMNS);
+                        text.setText("Skoor: " + myTetrisBoard.getScore());
+                    }
 
                     if (myTetrisBoard.isGameOver()) {
-                        myTetrisBoard = new TetrisBoard(ROWS, COLUMNS);
+                        text.setText("Mäng läbi! Skoor: " + myTetrisBoard.getScore());
                     }
+
                 }
             }
         };
 
+        timer.start();
+
         pauseButton.setOnAction(event -> pauseStatus = !pauseStatus);
 
-        resetButton.setOnAction(event -> myTetrisBoard = new TetrisBoard(ROWS, COLUMNS));
+        resetButton.setOnAction(event -> {
+            myTetrisBoard = new TetrisBoard(ROWS, COLUMNS);
+            pauseStatus = false;
+        });
 
         // Puhver sisendkäskude jaoks tundus alguses hea mõte aga ilmselt mingi hetk tuleb lihtsamaks muuta
         scene.addEventHandler(KeyEvent.KEY_PRESSED, key -> {
@@ -125,7 +151,8 @@ public class Main extends Application {
             }
         });
 
-        timer.start();
+        primaryStage.setResizable(false);
+        primaryStage.sizeToScene();
         primaryStage.show();
 
     }
