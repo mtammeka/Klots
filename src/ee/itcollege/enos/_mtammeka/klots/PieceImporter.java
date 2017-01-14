@@ -19,11 +19,18 @@ public class PieceImporter {
 
         String temp = reader.readLine();
         while (temp != null) {
-            lines.add(temp);
-            System.out.println(lines.get(lines.size() - 1));
+            if (!temp.isEmpty() && temp.toCharArray()[0] == '#') {
+                // kommenteeritud ridu ignoreeritakse
+                temp = reader.readLine();
+            } else {
 
-            temp = reader.readLine();
+                lines.add(temp);
+                temp = reader.readLine();
+            }
         }
+
+
+        System.out.println(lines);
 
         reader.close();
     }

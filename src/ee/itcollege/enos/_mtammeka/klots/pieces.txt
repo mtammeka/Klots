@@ -1,3 +1,11 @@
+# See fail kirjeldab mängupalade kuju.
+# "Seest tühjad" klotsid pole lubatud, nagu nt:
+#   X
+#  X X
+#   X   jne.
+#
+# Klotse eraldavad tühjad read. Kommentaariread algavad trellidega.
+
 X
 X
 XX
@@ -14,5 +22,8 @@ XX
 
 XX
 XX
+
+ X
+XXX
 
 XXXX
