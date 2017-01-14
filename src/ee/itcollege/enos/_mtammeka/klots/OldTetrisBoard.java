@@ -7,7 +7,7 @@ import java.util.Set;
 /**
  * Created by Madis on 03.01.2017.
  */
-public class TetrisBoard {
+public class OldTetrisBoard {
 
     private boolean fallingPieceExists = false;
     private boolean gameOver = false;
@@ -34,7 +34,7 @@ public class TetrisBoard {
     public final static byte DOWN_ARROW = 1, LEFT_ARROW = 2, RIGHT_ARROW = 3, UP_ARROW = 4;
     private int[][] board;
 
-    public TetrisBoard(int rows, int columns) {
+    public OldTetrisBoard(int rows, int columns) {
         this.rows = rows;
         this.columns = columns;
 
