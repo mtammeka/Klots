@@ -6,36 +6,26 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
-
-import java.util.LinkedHashSet;
-import java.util.Set;
 
 /**
  * Created by Madis on 14.01.2017.
  */
 public class GameStage extends Stage {
+    private final int refreshRate = 6;
+    private final int ROWS = 25;
+    private final int COLUMNS = 10;
+    private long lastTimeStamp = 0;
 
     GameStage() {
-        final int refreshRate = 6;
-        final int STEP = 20;
-        final int ROWS = 25;
-        final int COLUMNS = 10;
-        long lastTimeStamp = 0;
-        Set<Byte> commandQueue = new LinkedHashSet<>();
-        boolean pauseStatus = false;
-
         BorderPane root = new BorderPane();
         root.setPadding(new Insets(10, 10, 10, 10));
         Scene scene = new Scene(root);
         this.setScene(scene);
         this.setTitle("Klots");
-
         Pane pane = new Pane();
         root.setCenter(pane);
-
         Button pauseButton = new Button("Paus/Jätka");
         Button resetButton = new Button("Uus mäng");
         Text text = new Text("Skoor: ");
@@ -45,29 +35,47 @@ public class GameStage extends Stage {
         buttonBox.setAlignment(Pos.CENTER);
         stuffBox.getChildren().addAll(buttonBox, text);
         stuffBox.setAlignment(Pos.CENTER);
-
         root.setBottom(stuffBox);
         root.setBackground(new Background(new BackgroundFill(Color.CYAN, CornerRadii.EMPTY, Insets.EMPTY)));
 
-        /*Mängulaua nähtavate ruutude loomine*/
-        Rectangle[][] boardFX = new Rectangle[ROWS][COLUMNS];
+        /*Mängulaua ruutude loomine*/
+        GameSquare[][] boardFX = new GameSquare[ROWS][COLUMNS];
 
-        for (int i = 0; i < ROWS; i++) {
-            for (int j = 0; j < COLUMNS; j++) {
-                boardFX[i][j] = new Rectangle();
-                boardFX[i][j].setX(j * STEP);
-                boardFX[i][j].setY(i * STEP);
-                boardFX[i][j].setWidth(STEP);
-                boardFX[i][j].setHeight(STEP);
-                boardFX[i][j].setStroke(Color.LIGHTGREEN);
-                boardFX[i][j].setStrokeWidth(2);
-                boardFX[i][j].setFill(Color.DARKGRAY);
-                pane.getChildren().add(boardFX[i][j]);
+        for (int row = 0; row < ROWS; row++) {
+            for (int column = 0; column < COLUMNS; column++) {
+                boardFX[row][column] = new GameSquare(row, column);
+                pane.getChildren().add(boardFX[row][column]);
             }
         }
+        BoardHandler handler = new BoardHandler(boardFX);
+
+        GameTimer timer = new GameTimer() {
+            @Override
+            public void handle(long now) {
+                // Mängupala liiguks muidu liiga kiiresti
+                if ((now - lastTimeStamp > (Math.pow(10, 9)) / refreshRate)) { // now on nanosekundites
+
+                    lastTimeStamp = now;
+                    handler.doSomething();
+
+                }
+            }
+        };
+
+        timer.start();
+
+        pauseButton.setOnAction(e -> {
+            if (timer.isRunning()) {
+                timer.stop();
+            } else {
+                timer.start();
+            }
+        });
 
         this.show();
-
+        this.setOnCloseRequest(e -> {
+            this.close();
+            new WelcomeStage();
+        });
     }
-
 }

@@ -32,6 +32,7 @@ public class WelcomeStage extends Stage {
 
         startGame.setOnAction(e -> {
             new GameStage();
+            this.close();
         });
 
         exitProgram.setOnAction(e -> {
@@ -41,6 +42,7 @@ public class WelcomeStage extends Stage {
 
         Scene scene = new Scene(welcomeRoot);
         this.setScene(scene);
+        this.setTitle("Klots");
         this.show();
     }
 }
