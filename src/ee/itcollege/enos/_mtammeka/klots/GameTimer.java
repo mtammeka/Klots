@@ -2,9 +2,6 @@ package ee.itcollege.enos._mtammeka.klots;
 
 import javafx.animation.AnimationTimer;
 
-import java.util.LinkedHashSet;
-import java.util.Set;
-
 /**
  * Created by Madis on 14.01.2017.
  */

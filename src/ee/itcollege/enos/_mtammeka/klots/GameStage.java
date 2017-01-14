@@ -1,5 +1,7 @@
 package ee.itcollege.enos._mtammeka.klots;
 
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -8,6 +10,8 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+
+import java.io.IOException;
 
 /**
  * Created by Madis on 14.01.2017.
@@ -27,7 +31,7 @@ public class GameStage extends Stage {
         Pane pane = new Pane();
         root.setCenter(pane);
         Button pauseButton = new Button("Paus/Jätka");
-        Button resetButton = new Button("Uus mäng");
+        Button resetButton = new Button("Testinupp");
         Text text = new Text("Skoor: ");
         HBox buttonBox = new HBox();
         VBox stuffBox = new VBox();
@@ -69,6 +73,15 @@ public class GameStage extends Stage {
                 timer.stop();
             } else {
                 timer.start();
+            }
+        });
+
+        resetButton.setOnAction(e -> {
+            try {
+                new PieceImporter();
+            } catch (IOException exception) {
+                System.out.println("No such file");
+                System.out.println(exception.toString()); // selline asi??
             }
         });
 
