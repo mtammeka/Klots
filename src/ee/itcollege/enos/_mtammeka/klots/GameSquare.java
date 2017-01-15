@@ -6,7 +6,7 @@ import javafx.scene.shape.Rectangle;
 /**
  * Created by Madis on 14.01.2017.
  */
-public class GameSquare extends Rectangle {
+public class GameSquare extends Rectangle implements TetrisSquare {
 
     private static final int STEP = 20;
 

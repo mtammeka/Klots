@@ -3,7 +3,7 @@ package ee.itcollege.enos._mtammeka.klots;
 /**
  * Created by Madis on 15.01.2017.
  */
-public class PieceSquare {
+public class PieceSquare implements TetrisSquare {
     private final static byte EMPTY_SQUARE = 1, OCCUPIED_SQUARE = 2, FIXED_SQUARE = 3;
     private byte status = EMPTY_SQUARE;
     public void setOccupied() {
