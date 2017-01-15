@@ -8,7 +8,7 @@ import java.util.ArrayList;
  */
 public class Piece {
 
-    GameSquare[][] piece;
+    private PieceSquare[][] piece;
 
     Piece(ArrayList<String> rawPieceLines) throws IOException {
         int maxRows = 0, maxColumns = 0;
@@ -23,12 +23,11 @@ public class Piece {
                 maxColumns = s.length();
             }
         }
-        System.out.println("---");
-        System.out.println("R: " + maxRows + " C: " + maxColumns);
-        piece = new GameSquare[maxRows][maxColumns];
+        
+        piece = new PieceSquare[maxRows][maxColumns];
         for (int row = 0; row < maxRows; row++) {
             for (int column = 0; column < maxColumns; column++) {
-                piece[row][column] = new GameSquare(row, column);
+                piece[row][column] = new PieceSquare();
             }
 
             String thisRow = rawPieceLines.get(row);
@@ -38,18 +37,28 @@ public class Piece {
                 }
             }
         }
-
-        // ee siin praegu testima kas midagi sai valmis
-        for (int row = 0; row < piece.length; row++) {
-            for (int column = 0; column < piece[0].length; column++) {
-                if (piece[row][column].isOccupied()) {
-                    System.out.printf("%c", 'X');
-                } else {
-                    System.out.printf("%c", ' ');
-                }
-            }
-            System.out.println();
-        } // jep prindib samad palad tagasi
-
     }
+
+    PieceSquare[][] getPiece() {
+        return piece;
+    }
+
+    static PieceSquare[][] getNextRotation(PieceSquare[][] inputPiece) {
+
+        int newRows = inputPiece[0].length;
+        int newColumns = inputPiece.length;
+
+        PieceSquare[][] rotatedPiece = new PieceSquare[newRows][newColumns];
+        int r = 0, c = 0;
+        for (int rows = 0; rows < newRows; rows++) {
+            for (int columns = newColumns - 1; columns >= 0; columns--) {
+                rotatedPiece[rows][columns] = inputPiece[r][c];
+                r++;
+            }
+            r = 0;
+            c++;
+        }
+        return rotatedPiece;
+    }
+
 }

@@ -60,7 +60,7 @@ public class GameStage extends Stage {
                 if ((now - lastTimeStamp > (Math.pow(10, 9)) / refreshRate)) { // now on nanosekundites
 
                     lastTimeStamp = now;
-                    handler.doSomething();
+                    handler.advanceTheGame();
 
                 }
             }
@@ -77,12 +77,7 @@ public class GameStage extends Stage {
         });
 
         resetButton.setOnAction(e -> {
-            try {
-                new PieceImporter();
-            } catch (IOException exception) {
-                System.out.println("No such file");
-                System.out.println(exception.toString()); // selline asi??
-            }
+            System.out.println("eimidagi");
         });
 
         this.show();

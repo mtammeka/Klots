@@ -1,8 +1,8 @@
 # See fail kirjeldab mängupalade kuju.
 # "Seest tühjad" klotsid pole lubatud, nagu nt:
 #   X
-#  X X
-#   X   jne.
+#  X X   ega   XXX
+#   X          X X    jne.
 #
 # Klotse eraldavad tühjad read. Kommentaariread algavad trellidega.
 # Ülemääraseid tühikuid rea alguses ei tohi kasutada
@@ -30,4 +30,4 @@ XXX
 
 XXXX
 
-# pärast viimast klotsi peaks olema tühi rida
+# pärast viimast klotsi peaks olema vähemalt üks tühi rida
