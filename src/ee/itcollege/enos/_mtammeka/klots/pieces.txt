@@ -5,6 +5,8 @@
 #   X   jne.
 #
 # Klotse eraldavad tühjad read. Kommentaariread algavad trellidega.
+# Ülemääraseid tühikuid rea alguses ei tohi kasutada
+# (st. enne klotsi "kõige vasakpoolsemat" osa ei tohi tühikut olla)
 
 X
 X
@@ -17,8 +19,8 @@ XX
 XX
  XX
 
-  XX
  XX
+XX
 
 XX
 XX
@@ -27,3 +29,5 @@ XX
 XXX
 
 XXXX
+
+# pärast viimast klotsi peaks olema tühi rida

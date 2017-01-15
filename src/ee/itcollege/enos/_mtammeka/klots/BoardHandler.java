@@ -4,7 +4,9 @@ package ee.itcollege.enos._mtammeka.klots;
  * Created by Madis on 14.01.2017.
  */
 public class BoardHandler {
-    int ROWS, COLUMNS;
+
+    /* BoardHandler võiks kutsuda PieceImporteri ja saada sealt array Pice objekte */
+    private int ROWS, COLUMNS;
     GameSquare[][] board;
     BoardHandler(GameSquare[][] board) {
         this.board = board;

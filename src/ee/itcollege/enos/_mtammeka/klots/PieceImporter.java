@@ -15,22 +15,27 @@ public class PieceImporter {
         File file = new File("src/ee/itcollege/enos/_mtammeka/Klots/pieces.txt");
         BufferedReader reader = new BufferedReader(new FileReader(file));
 
-        ArrayList<String> lines = new ArrayList<>();
+        ArrayList<String> rawPieceLines = new ArrayList<>();
+        ArrayList<Piece> pieces = new ArrayList<>();
 
         String temp = reader.readLine();
         while (temp != null) {
             if (!temp.isEmpty() && temp.toCharArray()[0] == '#') {
                 // kommenteeritud ridu ignoreeritakse
-                temp = reader.readLine();
             } else {
-
-                lines.add(temp);
-                temp = reader.readLine();
+                if (!temp.isEmpty()) {
+                    /* http://stackoverflow.com/questions/12106757/removing-spaces-at-the-end-of-a-string-in-java
+                     stringi lõpust tühikute eemaldamine (neid raskem pieces.txt koostades jälgida)
+                     \\s on vist nagu whitespace, "+" on et üks või mitu, dollar tähendab et lõpus
+                     */
+                    rawPieceLines.add(temp.replaceAll("\\s+$", ""));
+                } else if (!rawPieceLines.isEmpty()) {
+                    pieces.add(new Piece(rawPieceLines));
+                    rawPieceLines = new ArrayList<>();
+                }
             }
+            temp = reader.readLine();
         }
-
-
-        System.out.println(lines);
 
         reader.close();
     }
