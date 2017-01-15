@@ -1,17 +1,14 @@
 package ee.itcollege.enos._mtammeka.klots;
 
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
-
-import java.io.IOException;
 
 /**
  * Created by Madis on 14.01.2017.
@@ -31,11 +28,10 @@ public class GameStage extends Stage {
         Pane pane = new Pane();
         root.setCenter(pane);
         Button pauseButton = new Button("Paus/Jätka");
-        Button resetButton = new Button("Testinupp");
         Text text = new Text("Skoor: ");
         HBox buttonBox = new HBox();
         VBox stuffBox = new VBox();
-        buttonBox.getChildren().addAll(pauseButton, resetButton);
+        buttonBox.getChildren().add(pauseButton);
         buttonBox.setAlignment(Pos.CENTER);
         stuffBox.getChildren().addAll(buttonBox, text);
         stuffBox.setAlignment(Pos.CENTER);
@@ -51,12 +47,13 @@ public class GameStage extends Stage {
                 pane.getChildren().add(boardFX[row][column]);
             }
         }
-        BoardHandler handler = new BoardHandler(boardFX);
 
+        BoardHandler handler = new BoardHandler(boardFX);
         GameTimer timer = new GameTimer() {
             @Override
             public void handle(long now) {
                 // Mängupala liiguks muidu liiga kiiresti
+                handler.applyInput();
                 if ((now - lastTimeStamp > (Math.pow(10, 9)) / refreshRate)) { // now on nanosekundites
 
                     lastTimeStamp = now;
@@ -66,6 +63,9 @@ public class GameStage extends Stage {
             }
         };
 
+        handler.setStage(this);
+        handler.setTimer(timer);
+        handler.setScoreBoard(text);
         timer.start();
 
         pauseButton.setOnAction(e -> {
@@ -76,8 +76,27 @@ public class GameStage extends Stage {
             }
         });
 
-        resetButton.setOnAction(e -> {
-            System.out.println("eimidagi");
+        scene.addEventHandler(KeyEvent.KEY_PRESSED, key -> {
+            switch (key.getCode()) {
+                case LEFT:
+                    handler.shiftLeft();
+                    break;
+                case RIGHT:
+                    handler.shiftRight();
+                    break;
+                case DOWN:
+                    handler.speedUp();
+                    break;
+                case UP:
+                    handler.rotate();
+                    break;
+                case SPACE:
+                    if (timer.isRunning()) {
+                        timer.stop();
+                    } else {
+                        timer.start();
+                    }
+            }
         });
 
         this.show();

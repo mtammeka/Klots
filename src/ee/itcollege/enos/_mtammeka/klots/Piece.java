@@ -16,7 +16,7 @@ public class Piece {
           * X
           * X
           * XX
-          * sellest tehakse siin veel 3 roteeritud varianti*/
+          * */
         maxRows = rawPieceLines.size();
         for (String s : rawPieceLines) {
             if (s.length() > maxColumns) {
@@ -43,7 +43,7 @@ public class Piece {
         return piece;
     }
 
-    static PieceSquare[][] getNextRotation(PieceSquare[][] inputPiece) {
+    static PieceSquare[][] getNextRotation(final PieceSquare[][] inputPiece) {
 
         int newRows = inputPiece[0].length;
         int newColumns = inputPiece.length;
