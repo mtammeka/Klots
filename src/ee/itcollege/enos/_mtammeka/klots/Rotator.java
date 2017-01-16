@@ -12,20 +12,31 @@ public class Rotator {
 
         int pieceHeight = rotatedPiece.length, pieceWidth = rotatedPiece[0].length;
 
+        int leftEdge = 0, rightEdge = 0, lowEdge = 0, highEdge = 0;
         ArrayList<Integer> rowPresence = new ArrayList<>();
         ArrayList<Integer> colPresence = new ArrayList<>();
         // 1. otsime langeva klotsi keskpunkti praegusel laual
         for (int r = 0; r < boardHeight; r++) {
             for (int c = 0; c < boardWidth; c++) {
                 if (board[r][c].isOccupied()) {
-                    rowPresence.add(r);
-                    colPresence.add(c);
+                    if (highEdge == 0) {
+                        highEdge = r;
+                    } else if (lowEdge < r) {
+                        lowEdge = r;
+                    }
+
+                    if (leftEdge == 0) {
+                        leftEdge = c;
+                    } else if (rightEdge < c) {
+                        rightEdge = c;
+                    }
+
                 }
             }
         }
-        int rCoordinate = average(rowPresence) - Math.round(pieceHeight / 2);
-        int cCoordinate = average(colPresence) - Math.round(pieceWidth / 2);
-        
+        int cCoordinate = Math.round(((leftEdge + rightEdge) / 2) - (pieceWidth / 2));
+        int rCoordinate = Math.round(((highEdge + lowEdge) / 2) - (pieceHeight / 2));
+
         // 2. proovime kas nendele koordinaatidele mahub klotsi asetama üldse
         try {
             for (int r = 0; r < pieceHeight; r++) {
@@ -54,14 +65,6 @@ public class Rotator {
         // 4. edaspidiseks on currentPiece praegune rotatedPiece
         return true;
 
-    }
-
-    private static int average(ArrayList<Integer> array) {
-        int sum = 0;
-        for (int n : array) {
-            sum += n;
-        }
-        return sum / array.size();
     }
 
     private static void clearBoard(GameSquare[][] board) {

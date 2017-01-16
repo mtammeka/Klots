@@ -28,7 +28,7 @@ public class GameStage extends Stage {
         Pane pane = new Pane();
         root.setCenter(pane);
         Button pauseButton = new Button("Paus/Jätka");
-        Text text = new Text("Skoor: ");
+        Text text = new Text("Skoor: 0");
         HBox buttonBox = new HBox();
         VBox stuffBox = new VBox();
         buttonBox.getChildren().add(pauseButton);

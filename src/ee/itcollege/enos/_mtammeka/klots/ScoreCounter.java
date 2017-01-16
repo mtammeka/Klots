@@ -2,6 +2,8 @@ package ee.itcollege.enos._mtammeka.klots;
 
 import java.util.LinkedHashSet;
 
+import static ee.itcollege.enos._mtammeka.klots.PieceSpawner.copyState;
+
 /**
  * Created by Madis on 15.01.2017.
  */
@@ -22,7 +24,6 @@ public class ScoreCounter {
         }
 
         // jõudsime siia - read mis tuleb eemaldada on leitud
-        System.out.println(completedLines + " siit edasi");
         // käib alt üles board massiivi läbi ja jätab "kopeerimata" read mis completedLines arrays mainitud
         // võib arvestada et "Occupied" ei ole hetkel midagi laual
 
@@ -42,24 +43,13 @@ public class ScoreCounter {
                 tempColumn[n] = new PieceSquare();
                 tempColumn[n].setEmpty();
             }
+            // lõpuks nihkumistega tulp kirjutatakse tagasi
             for (int r = 0; r < boardHeight; r++) {
                 copyState(tempColumn[r], board[r][c]);
             }
         }
 
         return completedLines.size();
-    }
-
-
-    // kuskil oli veel koht kus sellist ägedat interfacei meetodit kasutada saab, otsin pärast üles
-    public static void copyState(TetrisSquare from, TetrisSquare to) {
-        if (from.isFixed()) {
-            to.setFixed();
-        } else if (from.isOccupied()) {
-            to.setOccupied();
-        } else {
-            to.setEmpty();
-        }
     }
 
 }

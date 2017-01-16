@@ -28,12 +28,18 @@ public class PieceSpawner {
         // aga kui siia jõutud siis spawnimiseks ruumi on
         for (int r = 0; r < pieceHeight; r++) {
             for (int c = 0; c < pieceWidth; c++) {
-                if (piece[r][c].isOccupied()) {
-                    board[startRow + r][startColumn + c].setOccupied();
-                }
+                copyState(piece[r][c], board[startRow + r][startColumn + c]);
             }
         }
-
         return true;
+    }
+    public static void copyState(TetrisSquare from, TetrisSquare to) {
+        if (from.isFixed()) {
+            to.setFixed();
+        } else if (from.isOccupied()) {
+            to.setOccupied();
+        } else {
+            to.setEmpty();
+        }
     }
 }

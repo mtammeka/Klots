@@ -34,11 +34,6 @@ public class BoardHandler {
         }
     }
 
-    public void doSomething() {
-        // selle demomeetodi kindlati eemaldaks mingi hetk
-        board[(int) (Math.random() * rows)][(int) (Math.random() * columns)].setOccupied();
-    }
-
     public void advanceTheGame() {
         if (!fallingPieceExists) {
             int tempScore = ScoreCounter.removeLines(board);
@@ -59,10 +54,8 @@ public class BoardHandler {
         if (isGameOver) {
             parentStage.close();
             timer.stop();
-            new WelcomeStage();
+            new ScoreDialogStage(score);
         }
-
-
     }
 
     void applyInput() {
