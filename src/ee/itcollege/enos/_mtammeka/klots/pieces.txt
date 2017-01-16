@@ -8,8 +8,26 @@
 # Ülemääraseid tühikuid rea alguses ei tohi kasutada
 # (st. enne klotsi "kõige vasakpoolsemat" osa ei tohi tühikut olla)
 
-XXXXX
-XXXXX
-XXXXX
+X
+X
+XX
+
+ X
+ X
+XX
+
+XX
+ XX
+
+ XX
+XX
+
+XX
+XX
+
+ X
+XXX
+
+XXXX
 
 # pärast viimast klotsi peaks olema vähemalt üks tühi rida
