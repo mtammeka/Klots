@@ -13,8 +13,6 @@ public class Rotator {
         int pieceHeight = rotatedPiece.length, pieceWidth = rotatedPiece[0].length;
 
         int leftEdge = 0, rightEdge = 0, lowEdge = 0, highEdge = 0;
-        ArrayList<Integer> rowPresence = new ArrayList<>();
-        ArrayList<Integer> colPresence = new ArrayList<>();
         // 1. otsime langeva klotsi keskpunkti praegusel laual
         for (int r = 0; r < boardHeight; r++) {
             for (int c = 0; c < boardWidth; c++) {
@@ -64,7 +62,6 @@ public class Rotator {
         }
         // 4. edaspidiseks on currentPiece praegune rotatedPiece
         return true;
-
     }
 
     private static void clearBoard(GameSquare[][] board) {

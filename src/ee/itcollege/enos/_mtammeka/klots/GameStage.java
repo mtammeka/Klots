@@ -69,16 +69,14 @@ public class GameStage extends Stage {
         timer.start();
 
         pauseButton.setOnAction(e -> {
-            if (timer.isRunning()) {
-                timer.stop();
-            } else {
-                timer.start();
-            }
+            timer.pauseToggle();
         });
 
         scene.addEventHandler(KeyEvent.KEY_PRESSED, key -> {
             switch (key.getCode()) {
                 case LEFT:
+                    /* päris shiftLeft toimub tegelikult alles
+                     järgmine kord kui handlerile kutsutakse ka applyInput */
                     handler.shiftLeft();
                     break;
                 case RIGHT:
@@ -91,11 +89,7 @@ public class GameStage extends Stage {
                     handler.rotate();
                     break;
                 case SPACE:
-                    if (timer.isRunning()) {
-                        timer.stop();
-                    } else {
-                        timer.start();
-                    }
+                    timer.pauseToggle();
             }
         });
 

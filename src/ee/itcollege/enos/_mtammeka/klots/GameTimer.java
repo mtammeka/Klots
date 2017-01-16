@@ -27,4 +27,12 @@ public abstract class GameTimer extends AnimationTimer {
     public boolean isRunning() {
         return running;
     }
+
+    public void pauseToggle() {
+        if (running) {
+            this.stop();
+        } else {
+            this.start();
+        }
+    }
 }
