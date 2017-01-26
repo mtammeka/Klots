@@ -13,7 +13,9 @@ public class PieceImporter {
     private ArrayList<Piece> pieces;
 
     PieceImporter() throws IOException {
-        File file = new File("src/ee/itcollege/enos/_mtammeka/Klots/pieces.txt");
+        String S = File.separator;
+        File file = new File("src" + S + "ee" + S + "itcollege" + S + "enos" + S + "_mtammeka" + S + "klots" + S + "pieces.txt");
+
         BufferedReader reader = new BufferedReader(new FileReader(file));
 
         ArrayList<String> rawPieceLines = new ArrayList<>();

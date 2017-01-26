@@ -21,7 +21,9 @@ public class BoardHandler {
     private volatile int leftShiftCount = 0, rightShiftCount = 0, rotateCount = 0, speedUpCount = 0;
     private ArrayList<Piece> pieces;
 
-    BoardHandler(GameSquare[][] board) {
+    BoardHandler(GameSquare[][] board, Stage parentStage, Text text) {
+        this.text = text; // tekst skoori esitamiseks
+        this.parentStage = parentStage; // seda viita ei kasutaks muuks kui GameStage sulgemiseks kui mäng läbi
         this.board = board;
         rows = board.length;
         columns = board[0].length; // eeldame ühepikkuseid ridu!!
@@ -42,6 +44,8 @@ public class BoardHandler {
                 text.setText("Skoor: " + score);
             }
 
+            // järgnev rida tekitab probleemi kui.... arrayList pieces on initsialiseerimata?
+            // haha mingi hetk see ei töötanud linuxis kuna failiaadressi esitamine natuke teine
             currentPiece = pieces.get((int)(pieces.size() * Math.random())).getPiece();
 
             isGameOver = !PieceSpawner.spawn(board, currentPiece);
@@ -98,13 +102,8 @@ public class BoardHandler {
         speedUpCount++;
     }
 
-    void setStage(Stage stage) {
-        parentStage = stage;
-    }
     void setTimer(AnimationTimer timer) {
         this.timer = timer;
     }
-    void setScoreBoard(Text text) {
-        this.text = text;
-    }
+
 }

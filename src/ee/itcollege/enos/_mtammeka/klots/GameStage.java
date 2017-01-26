@@ -48,7 +48,7 @@ public class GameStage extends Stage {
             }
         }
 
-        BoardHandler handler = new BoardHandler(boardFX);
+        BoardHandler handler = new BoardHandler(boardFX, this, text);
         GameTimer timer = new GameTimer() {
             @Override
             public void handle(long now) {
@@ -63,9 +63,8 @@ public class GameStage extends Stage {
             }
         };
 
-        handler.setStage(this);
         handler.setTimer(timer);
-        handler.setScoreBoard(text);
+
         timer.start();
 
         pauseButton.setOnAction(e -> {
