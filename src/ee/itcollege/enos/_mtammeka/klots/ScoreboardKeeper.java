@@ -37,11 +37,13 @@ public class ScoreboardKeeper {
 
     String getScoreBoard() {
         //anname tagasi edetabeli
-        StringBuilder printOut = new StringBuilder("\n");
+        StringBuilder printOut = new StringBuilder(String.format("\nTOP%d:\n", LEADERBOARD_SIZE));
+        int index = 0;
         for (ScoreEntry entry : entries) {
+            printOut.append(String.format("%2d. ", ++index));
             printOut.append(entry.getName());
             for (int i = entry.getName().length(); i < 20; i++) {
-                // natuke toore tabeli formattimine, et skoorid joonduks paremale
+                // natuke toores tabeli formattimine, et skoorid joonduks paremale
                 printOut.append(" ");
             }
             printOut.append(entry.getScore());

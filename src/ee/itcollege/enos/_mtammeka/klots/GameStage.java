@@ -10,11 +10,13 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * Created by Madis on 14.01.2017.
  */
 public class GameStage extends Stage {
-    private final int refreshRate = 6;
+    private final int STEP_INTERVAL_MS = 110;
     private final int ROWS = 25;
     private final int COLUMNS = 10;
     private long lastTimeStamp = 0;
@@ -28,12 +30,12 @@ public class GameStage extends Stage {
         Pane pane = new Pane();
         root.setCenter(pane);
         Button pauseButton = new Button("Paus/Jätka");
-        Text text = new Text("Skoor: 0");
+        Text scoreLiveText = new Text("Skoor: 0");
         HBox buttonBox = new HBox();
         VBox stuffBox = new VBox();
         buttonBox.getChildren().add(pauseButton);
         buttonBox.setAlignment(Pos.CENTER);
-        stuffBox.getChildren().addAll(buttonBox, text);
+        stuffBox.getChildren().addAll(buttonBox, scoreLiveText);
         stuffBox.setAlignment(Pos.CENTER);
         root.setBottom(stuffBox);
         root.setBackground(new Background(new BackgroundFill(Color.CYAN, CornerRadii.EMPTY, Insets.EMPTY)));
@@ -48,13 +50,14 @@ public class GameStage extends Stage {
             }
         }
 
-        BoardHandler handler = new BoardHandler(boardFX, this, text);
+        BoardHandler handler = new BoardHandler(boardFX, this, scoreLiveText);
         GameTimer timer = new GameTimer() {
             @Override
             public void handle(long now) {
                 // Mängupala liiguks muidu liiga kiiresti
                 handler.applyInput();
-                if ((now - lastTimeStamp > (Math.pow(10, 9)) / refreshRate)) { // now on nanosekundites
+                if ((now - lastTimeStamp > TimeUnit.NANOSECONDS.convert(STEP_INTERVAL_MS, TimeUnit.MILLISECONDS))) {
+                    // now on nanosekundites
 
                     lastTimeStamp = now;
                     handler.advanceTheGame();
